@@ -3,6 +3,8 @@
 
 The path operation module implements cross-platform path operations, which is a custom module of xmake.
 
+For file I/O operations, see the [io module](/api/scripts/builtin-modules/io). For file and directory management, see the [os module](/api/scripts/builtin-modules/os).
+
 ## path.new
 
 - Create a new path instance
@@ -54,6 +56,8 @@ local p = path("/tmp/file.txt")  -- Automatically creates an instance
 print(p:filename())
 ```
 
+Use [path.instance_of](#path-instance_of) to check if a value is a path instance.
+
 ## path.normalize
 
 - Normalize the path
@@ -86,6 +90,8 @@ Normalize the path (simplify `.` and `..`):
 print(path.normalize("/tmp/./../file.txt"))  -- Output: /file.txt
 print(path.normalize("c:\\tmp\\..\\.."))     -- On Windows: c:\\..
 ```
+
+If you only need to convert path separators without simplifying `.` and `..`, use [path.translate](#path-translate).
 
 ## path.join
 
@@ -150,6 +156,8 @@ print(path.translate("$(tmpdir)\\dir/dir2//file.txt"))
 
 The path strings of the above three different formats, after being standardized by `translate`, will become the format supported by the current platform, and the redundant path separator will be removed.
 
+If you also need to simplify `.` and `..`, use [path.normalize](#path-normalize).
+
 ## path.basename
 
 - Get the file name with no suffix at the end of the path
@@ -176,6 +184,8 @@ print(path.basename("$(tmpdir)/dir/file.txt"))
 ```
 
 The result is: `file`
+
+To get the filename with extension, use [path.filename](#path-filename); for the extension, use [path.extension](#path-extension); for the directory part, use [path.directory](#path-directory).
 
 ## path.filename
 
@@ -212,7 +222,7 @@ The result is: `file.txt`
 
 ::: tip API
 ```lua
-path.extension(path: <string>)
+path.extension(path: <string>, level?: <number>)
 ```
 :::
 
@@ -222,6 +232,7 @@ path.extension(path: <string>)
 | Parameter | Description |
 |-----------|-------------|
 | path | Path string |
+| level | Optional. Extension level, default is 1 |
 
 #### Usage
 
@@ -230,6 +241,14 @@ print(path.extension("$(tmpdir)/dir/file.txt"))
 ```
 
 The result is: `.txt`
+
+You can specify the `level` parameter to get multi-level extensions, for example:
+
+```lua
+print(path.extension("/tmp/file.tar.gz", 2))
+```
+
+The result is: `.tar.gz`
 
 ## path.directory
 
@@ -295,6 +314,8 @@ print(path.relative("$(tmpdir)/dir/file.txt"))
 
 The result is the same.
 
+The reverse operation is [path.absolute](#path-absolute), which converts relative paths to absolute paths. Use [path.is_absolute](#path-is_absolute) to check if a path is absolute.
+
 ## path.absolute
 
 - Convert to absolute path
@@ -331,6 +352,8 @@ print(path.absolute("dir/file.txt"))
 ```
 
 The result is the same.
+
+The reverse operation is [path.relative](#path-relative), which converts absolute paths to relative paths.
 
 ## path.is_absolute
 
@@ -385,9 +408,11 @@ print(path.split("/tmp/file.txt"))
 ```
 The result is: `{ "tmp", "file.txt" }`
 
+The reverse operation is [path.join](#path-join), which joins multiple paths into one.
+
 ## path.sep
 
-- Return the current separator, usually `/`
+- Get the path separator of the current platform
 
 #### Function Prototype
 
@@ -410,7 +435,7 @@ path.sep()
 print(path.sep())
 ```
 
-The result is: `/`
+The result is: `/` on Unix, `\` on Windows.
 
 ## path.islastsep
 
@@ -441,7 +466,7 @@ end
 
 ## path.splitenv
 
-- Split a environment variable value of an array of pathes
+- Split an environment variable value into an array of paths
 
 #### Function Prototype
 
@@ -461,22 +486,24 @@ path.splitenv(envpath: <string>)
 #### Usage
 
 ```lua
-local pathes = path.splitenv(vformat("$(env PATH)"))
+local paths = path.splitenv(vformat("$(env PATH)"))
 
 -- for windows
-local pathes = path.splitenv("C:\\Windows;C:\\Windows\\System32")
+local paths = path.splitenv("C:\\Windows;C:\\Windows\\System32")
 -- got { "C:\\Windows", "C:\\Windows\\System32" }
 
 -- for *nix
-local pathes = path.splitenv("/usr/bin:/usr/local/bin")
+local paths = path.splitenv("/usr/bin:/usr/local/bin")
 -- got { "/usr/bin", "/usr/local/bin" }
 ```
 
 The result is an array of strings, each item is a path in the input string.
 
+The reverse operation is [path.joinenv](#path-joinenv), which joins a path array into an environment variable string. Use [os.getenv](/api/scripts/builtin-modules/os#os-getenv) to get environment variable values.
+
 ## path.joinenv
 
-- Concat two environment variable by the environment separator
+- Join path array into an environment variable string
 
 #### Function Prototype
 
@@ -496,13 +523,20 @@ path.joinenv(paths: <array>)
 #### Usage
 
 ```lua
-print(path.joinenv({"/tmp/dir", "/tmp/dir2"}))
+-- on Unix
+print(path.joinenv({"/usr/bin", "/usr/local/bin"}))
+-- Output: /usr/bin:/usr/local/bin
+
+-- on Windows
+print(path.joinenv({"C:\\Windows", "C:\\Windows\\System32"}))
+-- Output: C:\Windows;C:\Windows\System32
 ```
-The result is: `/tmp/dir;/tmp/dir2` (on Windows)
+
+The reverse operation is [path.splitenv](#path-splitenv), which splits an environment variable string into a path array. The environment variable separator for the current platform can be obtained via [path.envsep](#path-envsep).
 
 ## path.envsep
 
-- Get the environment separator
+- Get the environment variable path separator of the current platform
 
 #### Function Prototype
 
@@ -525,33 +559,7 @@ path.envsep()
 print(path.envsep())
 ```
 
-The result is: `;`
-
-## path.cygwin_path
-
--  Get the converted MSYS2/Cygwin style path
-
-#### Function Prototype
-
-::: tip API
-```lua
-path.cygwin_path(path: <string>)
-```
-:::
-
-
-#### Parameter Description
-
-| Parameter | Description |
-|-----------|-------------|
-| path | Windows path string to convert |
-
-#### Usage
-
-```lua
-print(path.cygwin_path("C:\\Windows"))
-```
-The result is: `/C/Windows`
+The result is: `:` on Unix, `;` on Windows.
 
 ## path.pattern
 
@@ -579,3 +587,96 @@ print(path.pattern("/tmp/file.txt"))
 ```
 
 The result is: `/[tT][mM][pP]/[fF][iI][lL][eE]%.[tT][xX][tT]`
+
+## path.unix
+
+- Convert path to Unix style
+
+#### Function Prototype
+
+::: tip API
+```lua
+path.unix(path: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| path | Path string |
+
+#### Usage
+
+Replace all path separators with `/`, typically used on Windows when Unix-style paths are needed:
+
+```lua
+print(path.unix("C:\\Windows\\System32"))
+-- Output: C:/Windows/System32
+```
+
+If you need Cygwin-style conversion (with drive letter transformation), use [path.cygwin](#path-cygwin). To convert to the native style of the current platform, use [path.translate](#path-translate).
+
+## path.cygwin
+
+- Convert path to Cygwin style
+
+#### Function Prototype
+
+::: tip API
+```lua
+path.cygwin(path: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| path | Path string |
+
+#### Usage
+
+Convert a Windows path to Cygwin style, transforming the drive letter `C:\` to `/c/` and replacing `\` with `/`:
+
+```lua
+print(path.cygwin("C:\\Windows\\System32"))
+-- Output: /c/Windows/System32
+```
+
+## path.instance_of
+
+- Check if a value is a path instance
+
+#### Function Prototype
+
+::: tip API
+```lua
+path.instance_of(p: <any>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| p | The value to check |
+
+#### Return Value
+
+| Type | Description |
+|------|-------------|
+| boolean | Returns true if it is a path instance, false otherwise |
+
+#### Usage
+
+```lua
+local p = path.new("/tmp/file.txt")
+print(path.instance_of(p))      -- Output: true
+print(path.instance_of("/tmp")) -- Output: false
+```
+
+Path instances are created with [path.new](#path-new).

@@ -3,6 +3,8 @@
 
 The io operation module extends lua's built-in io module to provide more easy-to-use interfaces.
 
+For file and directory management (copy, move, delete, etc.), see the [os module](/api/scripts/builtin-modules/os). For path joining and parsing, see the [path module](/api/scripts/builtin-modules/path). For serialization, see [string.serialize](/api/scripts/builtin-modules/string#string-serialize).
+
 ## io.open
 
 - Open file for reading and writing
@@ -129,6 +131,8 @@ if data then
 end
 ```
 
+For in-memory serialization/deserialization, use [string.serialize](/api/scripts/builtin-modules/string#string-serialize) and [string.deserialize](/api/scripts/builtin-modules/string#string-deserialize).
+
 ## io.save
 
 - Serialize all table contents to the specified path file
@@ -214,6 +218,8 @@ Option parameters:
 
 xmake automatically detects and handles different newline formats (LF, CRLF) and automatically detects UTF-8 BOM.
 
+To read a file line by line, use [io.lines](#io-lines). To load serialized table data, use [io.load](#io-load).
+
 ## io.writefile
 
 - Write all content to the specified path file
@@ -222,7 +228,7 @@ xmake automatically detects and handles different newline formats (LF, CRLF) and
 
 ::: tip API
 ```lua
-io.writefile(filename: <string>, data: <string>)
+io.writefile(filename: <string>, data: <string>, options?: <table>)
 ```
 :::
 
@@ -233,6 +239,7 @@ io.writefile(filename: <string>, data: <string>)
 |-----------|-------------|
 | filename | File path string |
 | data | Data string to write |
+| options | Options table (optional) |
 
 #### Usage
 
@@ -242,6 +249,8 @@ It is more convenient to directly write the contents of the entire file without 
 io.writefile("xxx.txt", "all data")
 ```
 
+The corresponding read operation is [io.readfile](#io-readfile). To serialize and save table data, use [io.save](#io-save).
+
 ## io.gsub
 
 - Full text replaces the contents of the specified path file
@@ -250,7 +259,7 @@ io.writefile("xxx.txt", "all data")
 
 ::: tip API
 ```lua
-io.gsub(filename: <string>, pattern: <string>, replacement: <string>)
+io.gsub(filename: <string>, pattern: <string>, replacement: <string>, options?: <table>)
 ```
 :::
 
@@ -262,15 +271,18 @@ io.gsub(filename: <string>, pattern: <string>, replacement: <string>)
 | filename | File path string |
 | pattern | Pattern string |
 | replacement | Replacement string |
+| options | Options table (optional) |
 
 #### Usage
 
-Similar to the [string.gsub](#stringgsub) interface, the full-text pattern matches the replacement content, but here is the direct operation file, for example:
+Similar to the `string.gsub` interface, the full-text pattern matches the replacement content, but here is the direct operation file, for example:
 
 ```lua
 -- Remove all whitespace characters from the file
 io.gsub("xxx.txt", "%s+", "")
 ```
+
+To use plain text matching for replacement (avoiding special character issues), use [io.replace](#io-replace).
 
 ## io.tail
 
@@ -327,6 +339,8 @@ Read all the contents of the file and display it, similar to the `cat xxx.txt` c
 ```lua
 io.cat("xxx.txt")
 ```
+
+To display only the tail of a file, use [io.tail](#io-tail). To read content into a variable, use [io.readfile](#io-readfile).
 
 ## io.print
 
@@ -536,3 +550,230 @@ io.replace("xxx.txt", "1+1=2", "2+2=4", {plain = true})
 Option parameters:
 - `plain`: If true, use simple string matching; if false, use pattern matching
 - `encoding`: Specify file encoding format
+
+For pattern matching replacement, you can also use [io.gsub](#io-gsub). For string-level replacement, see [string.replace](/api/scripts/builtin-modules/string#string-replace).
+
+## io.insert
+
+- Insert text before a line number in a file
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.insert(filepath: <string>, lineidx: <number>, text: <string>, options?: <table>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| filepath | File path string |
+| lineidx | Line number to insert before |
+| text | Text content to insert |
+| options | Options table (optional) |
+
+#### Usage
+
+Insert a line of text before the specified line number in a file:
+
+```lua
+io.insert("xxx.txt", 3, "new line content")
+```
+
+To replace content in a file instead of inserting, use [io.replace](#io-replace) or [io.gsub](#io-gsub).
+
+## io.read
+
+- Read data from standard input
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.read(fmt?: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| fmt | Optional. Read format, e.g. `"*l"` (read a line), `"*n"` (read a number), `"*a"` (read all) |
+
+#### Usage
+
+```lua
+-- Read a line from standard input
+local line = io.read("*l")
+```
+
+Use [io.readable](#io-readable) to check if stdin is readable before reading. To write to stdout, use [io.write](#io-write).
+
+## io.write
+
+- Write data to standard output
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.write(...)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| ... | Content to write |
+
+#### Usage
+
+```lua
+io.write("hello xmake\n")
+```
+
+## io.flush
+
+- Flush standard output buffer
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.flush()
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| None | No parameters |
+
+#### Usage
+
+```lua
+io.write("hello")
+io.flush()
+```
+
+## io.readable
+
+- Check if standard input is readable
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.readable()
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| None | No parameters |
+
+#### Usage
+
+```lua
+if io.readable() then
+    local data = io.read("*l")
+end
+```
+
+## io.isatty
+
+- Check if a file is a terminal device
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.isatty(file?: <file>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| file | Optional. File object, defaults to stdout |
+
+#### Usage
+
+```lua
+if io.isatty() then
+    -- stdout is a terminal
+end
+```
+
+## io.close
+
+- Close a file
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.close(file?: <file>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| file | Optional. File object, defaults to stdout |
+
+#### Usage
+
+```lua
+local file = io.open("xxx.txt", "r")
+-- ...
+io.close(file)
+```
+
+## io.convert
+
+- Convert file encoding
+
+#### Function Prototype
+
+::: tip API
+```lua
+io.convert(inputfile: <string>, outputfile: <string>, opt?: <table>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| inputfile | Input file path |
+| outputfile | Output file path |
+| opt | Optional. Options table |
+
+#### Usage
+
+Convert a file from one encoding to another:
+
+```lua
+io.convert("input.txt", "output.txt", {from = "gbk", to = "utf8"})
+```
+
+Supported encodings: `"utf8"`, `"utf8bom"`, `"utf16"`, `"utf16le"`, `"utf16lebom"`, `"utf16be"`, `"gb2312"`, `"gbk"`, `"iso8859"`, `"ucs2"`, `"ucs4"`, `"utf32"`, etc.
+
+[io.open](#io-open), [io.readfile](#io-readfile) and other interfaces also support specifying encoding via the `encoding` option.

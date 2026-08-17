@@ -8,6 +8,44 @@ This module is also a native module of lua, and xmake has been extended to provi
 Only some readonly interfaces (for example: `os.getenv`, `os.arch`) in the os module can be used in the description scope. Other interfaces can only be used in the script domain, for example: `os.cp`, `os .rm`etc.
 :::
 
+For file I/O operations, see the [io module](/api/scripts/builtin-modules/io). For path operations, see the [path module](/api/scripts/builtin-modules/path).
+
+## os.access
+
+- Check file access permissions
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.access(path: <string>, mode: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| path | File or directory path |
+| mode | Access mode: 'r' (read), 'w' (write), 'x' (execute) |
+
+#### Usage
+
+```lua
+if os.access("file", "r") then
+    print("readable")
+end
+
+if os.access("file", "w") then
+    print("writable")
+end
+
+if os.access("file", "x") then
+    print("executable")
+end
+```
+
 ## os.cp
 
 - Copy files or directories
@@ -464,6 +502,8 @@ if os.exists("$(builddir)/libxxx.a") then
 end
 ```
 
+
+
 ## os.islink
 
 - Determine if it is a symbolic link
@@ -736,6 +776,69 @@ Similar to [os.run](#os-run), just the way to pass parameters is passed through 
 
 ```lua
 os.runv("echo", {"hello", "xmake!"})
+```
+
+## os.vrun
+
+- Run native shell commands and echo them only in verbose mode
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.vrun(command: <string>, ...)
+```
+:::
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| command | Command string |
+| ... | Variable arguments for command |
+
+#### Usage
+
+Similar to [os.run](#os-run), but when verbose mode is enabled with `xmake -v` or `xmake --verbose`, it first echoes the formatted command and then runs it. Without verbose mode, the command runs quietly.
+
+```lua
+os.vrun("echo hello %s!", "xmake")
+```
+
+Use it in custom scripts that should remain quiet during normal builds while showing commands during debugging.
+
+## os.vrunv
+
+- Run native shell commands with an argument list and echo them only in verbose mode
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.vrunv(program: <string>, args: <table>, options: <table>)
+```
+:::
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| program | Program name |
+| args | Arguments table |
+| options | Optional options table. Supports the options of `os.runv` and `os.execv`; set `{dryrun = true}` to skip execution |
+
+#### Usage
+
+Similar to [os.runv](#os-runv), but when verbose mode is enabled with `xmake -v` or `xmake --verbose`, it first echoes the full command and runs it through `os.execv`. Without verbose mode, it runs quietly through `os.runv`.
+
+```lua
+os.vrunv("echo", {"hello", "xmake!"})
+```
+
+To show the command in verbose mode without executing it:
+
+```lua
+os.vrunv("echo", {"hello", "xmake!"}, {dryrun = true})
 ```
 
 ## os.exec
@@ -2142,5 +2245,242 @@ end
 
 benchmark(function()
     os.sleep(100)
+end)
+```
+
+## os.getpid
+
+- Get the current process ID
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.getpid()
+```
+:::
+
+
+#### Parameter Description
+
+No parameters required for this function.
+
+#### Usage
+
+```lua
+print(os.getpid())
+```
+
+## os.uid
+
+- Get user ID information
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.uid(name?: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| name | Optional. User name |
+
+#### Usage
+
+Returns a table containing user ID information, including `uid` and `euid` fields:
+
+```lua
+local id = os.uid()
+print(id.euid)
+```
+
+::: tip Note
+This interface is only available on Linux/macOS.
+:::
+
+[os.isroot](#os-isroot) uses this interface internally to check if the current user is root. See also [os.gid](#os-gid) for group information.
+
+## os.gid
+
+- Get group ID information
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.gid(name?: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| name | Optional. Group name |
+
+#### Usage
+
+Returns a table containing group ID information, including `gid` and `egid` fields:
+
+```lua
+local id = os.gid()
+print(id.egid)
+```
+
+::: tip Note
+This interface is only available on Linux/macOS.
+:::
+
+See also [os.uid](#os-uid) for user ID information.
+
+## os.nuldev
+
+- Get the null device path
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.nuldev(input?: <boolean>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| input | Optional. Whether to get the input null device path |
+
+#### Usage
+
+Get the null device path for the current platform, `/dev/null` on Unix and `nul` on Windows:
+
+```lua
+print(os.nuldev())
+```
+
+## os.pbpaste
+
+- Get content from the system clipboard
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.pbpaste()
+```
+:::
+
+
+#### Parameter Description
+
+No parameters required for this function.
+
+#### Usage
+
+```lua
+local content = os.pbpaste()
+if content then
+    print(content)
+end
+```
+
+::: tip Note
+This interface is only available on macOS and Linux (requires xsel).
+:::
+
+The reverse operation is [os.pbcopy](#os-pbcopy), which copies content to the clipboard.
+
+## os.pbcopy
+
+- Copy content to the system clipboard
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.pbcopy(data: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| data | String to copy to clipboard |
+
+#### Usage
+
+```lua
+os.pbcopy("hello xmake")
+```
+
+::: tip Note
+This interface is only available on macOS and Linux (requires xsel).
+:::
+
+The reverse operation is [os.pbpaste](#os-pbpaste), which gets content from the clipboard.
+
+## os.projectfile
+
+- Get the project file path
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.projectfile()
+```
+:::
+
+
+#### Parameter Description
+
+No parameters required for this function.
+
+#### Usage
+
+Get the xmake.lua file path of the current project:
+
+```lua
+print(os.projectfile())
+```
+
+To get the project directory path, use [os.projectdir](#os-projectdir).
+
+## os.atexit
+
+- Register an exit callback function
+
+#### Function Prototype
+
+::: tip API
+```lua
+os.atexit(on_exit: <function>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| on_exit | Callback function to execute on exit |
+
+#### Usage
+
+Register a callback function to be executed when xmake exits:
+
+```lua
+os.atexit(function ()
+    print("xmake exited")
 end)
 ```

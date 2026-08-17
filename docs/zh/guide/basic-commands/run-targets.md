@@ -4,6 +4,8 @@ Xmake 提供了内置的 `xmake run` 命令，可以快速的运行被构建的�
 
 这会提供许多的便利，并且它还会自动绑定运行需要的环境，确保资源、动态库等都能正常被自动加载。
 
+如需运行测试用例，请参阅[运行测试](/zh/guide/basic-commands/run-tests)。关于安装构建产物到系统，请参阅[安装卸载](/zh/guide/basic-commands/install-and-uninstall)。
+
 ## 命令格式
 
 ```sh
@@ -90,7 +92,7 @@ $ xmake
 $ xmake run -d hello
 ```
 
-Xmake 将会使用调试器去加载程序运行，目前支持：lldb, gdb, windbg, vsjitdebugger, ollydbg 等各种调试器。
+Xmake 将会使用调试器去加载程序运行，目前支持：lldb, gdb, windbg, vsjitdebugger, ollydbg, nnd 等各种调试器。
 
 ```sh
 [lldb]$target create "build/hello"

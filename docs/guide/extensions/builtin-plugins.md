@@ -163,6 +163,21 @@ $ xmake lua /tmp/test.lua
 You can also use the `import` API to write a more advanced Lua script.
 :::
 
+### Run script from stdin
+
+The `xmake lua` command now supports reading and running scripts from standard input (stdin), allowing you to pipe script content to xmake.
+
+```bash
+$ echo 'print("hello xmake")' | xmake lua --stdin
+hello xmake
+```
+
+Or:
+
+```bash
+$ cat script.lua | xmake lua --stdin
+```
+
 ### Run the builtin script
 
 You can run `xmake lua -l` to list all builtin script name, for example:
@@ -426,6 +441,68 @@ This is particularly useful for:
 - Automated build systems and CI/CD pipelines
 - Custom project analysis tools
 - Documentation generation
+
+### Show target dependency graph <Badge type="tip" text="v3.0.9" />
+
+The `xmake show --info=depgraph` command prints the dependency graph between targets. Three output formats are supported via `--format`:
+
+```sh
+# ASCII tree (default)
+$ xmake show --info=depgraph
+
+# Scoped to a single root target
+$ xmake show --info=depgraph --target=app
+
+# JSON output, suitable for tool integration
+$ xmake show --info=depgraph --format=json
+
+# Graphviz DOT output
+$ xmake show --info=depgraph --format=dot
+```
+
+The JSON output has the following shape:
+
+```json
+{
+  "root_targets": ["app"],
+  "targets": [
+    {"name": "core", "deps": []},
+    {"name": "ui",   "deps": ["core"]},
+    {"name": "app",  "deps": ["core", "ui"]}
+  ]
+}
+```
+
+And the DOT output:
+
+```
+digraph {
+    "core"
+    "ui" -> "core"
+    "app" -> "core"
+    "app" -> "ui"
+}
+```
+
+### Show list information as JSON <Badge type="tip" text="v3.1.0" />
+
+Since v3.1.0, the output format of `xmake show` is unified behind the `--format` flag, and the `-l/--list` information supports JSON output as well.
+
+```sh
+# plain text (default)
+$ xmake show -l targets
+$ xmake show -l targets --format=plain
+
+# json output
+$ xmake show -l targets --format=json
+["app","core","ui"]
+```
+
+`--format` accepts `plain`, `json` and `dot`, where `dot` only applies to `--info=depgraph`. If an unsupported format is passed for list information, xmake raises an error instead of silently falling back to plain text.
+
+::: tip NOTE
+The old `--json` flag still works, but it is deprecated in favor of `--format=json`.
+:::
 
 ### Show builtin compilation modes list
 

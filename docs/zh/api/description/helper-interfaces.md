@@ -8,6 +8,8 @@
 
 而 `check_xxx` 仅仅只是定义相关 macros 参与编译，但不会持久化到 `config.h.in` 中去。
 
+辅助接口通过 [includes()](/zh/api/description/global-interfaces#includes) 导入使用，检测结果可以通过 [has_config()](/zh/api/description/conditions#has-config) 判断，也可以配合 [option()](/zh/api/description/configuration-option) 使用。
+
 相关 issues 见：
 
 - [#342](https://github.com/xmake-io/xmake/issues/342)
@@ -398,6 +400,45 @@ checking for STRING_SIZE ... 24
 ```
 
 另外，我也可以通过 `target:check_sizeof` 在脚本域进行检测。
+
+## 检测类型对齐 <Badge type="tip" text="v3.1.0" />
+
+在 3.1.0 版本之后，我们新增了 `check_alignof` 接口，用于检测指定类型的对齐大小，用法和 `check_sizeof` 完全一致。
+
+```lua
+includes("@builtin/check")
+
+target("test")
+    set_kind("static")
+    add_files("*.cpp")
+    check_alignof("LONG_ALIGN", "long")
+    check_alignof("STRING_ALIGN", "std::string", {includes = "string"})
+```
+
+```sh
+$ xmake f -c
+checking for LONG_ALIGN ... 8
+checking for STRING_ALIGN ... 8
+```
+
+如果希望把检测结果写入 `config.h`，而不是定义成宏，可以使用 `configvar_check_alignof`。
+
+```lua
+target("test")
+    set_kind("static")
+    add_files("*.cpp")
+    add_configfiles("config.h.in")
+    configvar_check_alignof("ALIGNOF_LONG", "long")
+```
+
+```c
+// config.h.in
+#define ALIGNOF_LONG ${ALIGNOF_LONG}
+```
+
+检测代码会根据编译器和语言标准，自动选择 `alignof` / `_Alignof` / `__alignof` / `__alignof__`，因此 C11 之前的 C 代码以及 MSVC 也都能正常工作。并且由于结果是从编译产物中提取的，无需运行程序，所以同样支持交叉编译。
+
+另外，我也可以通过 `target:check_alignof` 在脚本域进行检测。
 
 ## 检测大小端
 

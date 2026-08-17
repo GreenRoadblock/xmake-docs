@@ -3,6 +3,8 @@
 
 io 操作模块，扩展了 lua 内置的 io 模块，提供更多易用的接口。
 
+文件和目录的管理操作（如复制、移动、删除等）请参阅 [os 模块](/zh/api/scripts/builtin-modules/os)，路径拼接和解析请参阅 [path 模块](/zh/api/scripts/builtin-modules/path)。序列化相关操作请参阅 [string.serialize](/zh/api/scripts/builtin-modules/string#string-serialize)。
+
 ## io.open
 
 - 打开文件用于读写
@@ -129,6 +131,8 @@ if data then
 end
 ```
 
+如果是在内存中进行序列化/反序列化操作，可以使用 [string.serialize](/zh/api/scripts/builtin-modules/string#string-serialize) 和 [string.deserialize](/zh/api/scripts/builtin-modules/string#string-deserialize)。
+
 ## io.save
 
 - 序列化保存所有table内容到指定路径文件
@@ -214,6 +218,8 @@ local data = io.readfile("xxx.txt", {continuation = "\\"})
 
 xmake 会自动检测并处理不同的换行符格式（LF、CRLF），并自动检测 UTF-8 BOM。
 
+如需逐行读取文件，请使用 [io.lines](#io-lines)。如需加载序列化后的 table 数据，请使用 [io.load](#io-load)。
+
 ## io.writefile
 
 - 写入所有内容到指定路径文件
@@ -243,6 +249,8 @@ io.writefile(filename: <string>, content: <string>, options: <table>)
 io.writefile("xxx.txt", "all data")
 ```
 
+与之对应的读取操作是 [io.readfile](#io-readfile)。如需序列化保存 table 数据，请使用 [io.save](#io-save)。
+
 ## io.gsub
 
 - 全文替换指定路径文件的内容
@@ -267,12 +275,14 @@ io.gsub(filepath: <string>, pattern: <string>, replace: <string|function>, optio
 
 #### 用法说明
 
-类似[string.gsub](#stringgsub)接口，全文模式匹配替换内容，不过这里是直接操作文件，例如：
+类似 `string.gsub` 接口，全文模式匹配替换内容，不过这里是直接操作文件，例如：
 
 ```lua
 -- 移除文件所有的空白字符
 io.gsub("xxx.txt", "%s+", "")
 ```
+
+如需使用纯文本匹配进行替换（避免特殊字符问题），请使用 [io.replace](#io-replace)。
 
 ## io.tail
 
@@ -329,6 +339,8 @@ io.cat(filepath: <string>)
 ```lua
 io.cat("xxx.txt")
 ```
+
+如只需显示文件末尾的部分内容，请使用 [io.tail](#io-tail)。如需将内容读取到变量中，请使用 [io.readfile](#io-readfile)。
 
 ## io.print
 
@@ -534,3 +546,230 @@ io.replace("xxx.txt", "%d[^\n]*", "xmake")
 > .plain: 若为 true，使用pattern进行简单匹配；为 false，则进行模式匹配；
 >
 > .encoding: 指定文件编码格式
+
+如需使用模式匹配进行替换，也可以使用 [io.gsub](#io-gsub)。对于字符串级别的替换操作，请参阅 [string.replace](/zh/api/scripts/builtin-modules/string#string-replace)。
+
+## io.insert
+
+- 在文件指定行号前插入文本
+
+#### 函数原型
+
+::: tip API
+```lua
+io.insert(filepath: <string>, lineidx: <number>, text: <string>, options?: <table>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| filepath | 文件路径字符串 |
+| lineidx | 要插入的行号 |
+| text | 要插入的文本内容 |
+| options | 选项表（可选） |
+
+#### 用法说明
+
+在文件的指定行号前插入一行文本：
+
+```lua
+io.insert("xxx.txt", 3, "new line content")
+```
+
+如需替换文件中的内容而非插入，请使用 [io.replace](#io-replace) 或 [io.gsub](#io-gsub)。
+
+## io.read
+
+- 从标准输入读取数据
+
+#### 函数原型
+
+::: tip API
+```lua
+io.read(fmt?: <string>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| fmt | 可选。读取格式，如 `"*l"`（读取一行）、`"*n"`（读取一个数字）、`"*a"`（读取全部） |
+
+#### 用法说明
+
+```lua
+-- 从标准输入读取一行
+local line = io.read("*l")
+```
+
+使用前可通过 [io.readable](#io-readable) 判断标准输入是否可读。向标准输出写入数据请使用 [io.write](#io-write)。
+
+## io.write
+
+- 向标准输出写入数据
+
+#### 函数原型
+
+::: tip API
+```lua
+io.write(...)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| ... | 要写入的内容 |
+
+#### 用法说明
+
+```lua
+io.write("hello xmake\n")
+```
+
+## io.flush
+
+- 刷新标准输出缓冲区
+
+#### 函数原型
+
+::: tip API
+```lua
+io.flush()
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| 无 | 无参数 |
+
+#### 用法说明
+
+```lua
+io.write("hello")
+io.flush()
+```
+
+## io.readable
+
+- 判断标准输入是否可读
+
+#### 函数原型
+
+::: tip API
+```lua
+io.readable()
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| 无 | 无参数 |
+
+#### 用法说明
+
+```lua
+if io.readable() then
+    local data = io.read("*l")
+end
+```
+
+## io.isatty
+
+- 判断文件是否为终端设备
+
+#### 函数原型
+
+::: tip API
+```lua
+io.isatty(file?: <file>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| file | 可选。文件对象，默认为 stdout |
+
+#### 用法说明
+
+```lua
+if io.isatty() then
+    -- 标准输出是终端
+end
+```
+
+## io.close
+
+- 关闭文件
+
+#### 函数原型
+
+::: tip API
+```lua
+io.close(file?: <file>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| file | 可选。文件对象，默认为 stdout |
+
+#### 用法说明
+
+```lua
+local file = io.open("xxx.txt", "r")
+-- ...
+io.close(file)
+```
+
+## io.convert
+
+- 转换文件编码格式
+
+#### 函数原型
+
+::: tip API
+```lua
+io.convert(inputfile: <string>, outputfile: <string>, opt?: <table>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| inputfile | 输入文件路径 |
+| outputfile | 输出文件路径 |
+| opt | 可选。选项表 |
+
+#### 用法说明
+
+将文件从一种编码格式转换为另一种：
+
+```lua
+io.convert("input.txt", "output.txt", {from = "gbk", to = "utf8"})
+```
+
+支持的编码格式：`"utf8"`、`"utf8bom"`、`"utf16"`、`"utf16le"`、`"utf16lebom"`、`"utf16be"`、`"gb2312"`、`"gbk"`、`"iso8859"`、`"ucs2"`、`"ucs4"`、`"utf32"` 等。
+
+[io.open](#io-open)、[io.readfile](#io-readfile) 等接口也支持通过 `encoding` 选项指定编码格式。

@@ -4,6 +4,8 @@ We briefly mentioned before that we can use the `xmake build` command to build a
 
 Here we will explain it in detail. First, let's take a look at its complete command format.
 
+For pre-build configuration options (platform, architecture, etc.), see [Build Configuration](/guide/basic-commands/build-configuration). For cross-compilation, see [Cross Compilation](/guide/basic-commands/cross-compilation).
+
 ## Command format
 
 ```sh
@@ -43,6 +45,18 @@ $ xmake build foo
 ```
 
 At this time, you need to write the full build subcommand, otherwise the target name may conflict with other subcommands.
+
+## Build multiple targets <Badge type="tip" text="v3.1.0" />
+
+Since v3.1.0, several target names can be passed at once.
+
+```sh
+$ xmake build foo bar test
+```
+
+Duplicated names are deduplicated automatically, and unknown target names are all checked up front, with suggestions for the closest matching target names.
+
+This also works for `xmake clean`, `xmake install`, `xmake uninstall`, `xmake package` and `xmake format`.
 
 ## Rebuild the target
 

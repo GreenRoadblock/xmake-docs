@@ -8,7 +8,7 @@ const pkg = require('vitepress/package.json')
 
 export default defineAdditionalConfig({
   lang: 'zh-Hans',
-  description: '一个基于Lua的轻量级跨平台自动构建工具',
+  description: '一个基于 Lua 的轻量级跨平台自动构建工具',
 
   themeConfig: {
     nav: nav(),
@@ -24,7 +24,9 @@ export default defineAdditionalConfig({
         {
           text: '关于',
           items: [
-            { text: '在线赞助', link: '/zh/about/sponsor' },
+            { text: '在线赞助 ❤️', link: '/zh/about/sponsor' },
+            { text: '关于作者', link: '/zh/about/author' },
+            { text: '认识团队', link: '/zh/about/team' },
             { text: '社区', link: '/zh/about/contact' },
             { text: '谁在使用 Xmake?', link: '/zh/about/who_is_using_xmake' },
           ]
@@ -156,15 +158,23 @@ function nav(): DefaultTheme.NavItem[] {
         {
           text: '资源',
           items: [
-            { text: 'Xmake 包仓库', link: 'https://xmake.microblock.cc/' }
+            { text: 'Xmake 包仓库', link: 'https://packages.xmake.io/' },
+            { text: 'Xmake Skills', link: 'https://github.com/xmake-io/xmake-skills' }
           ]
         },
         {
           text: '帮助',
           items: [
-            { text: '社区', link: '/zh/about/contact' },
             { text: '问题反馈', link: 'https://github.com/xmake-io/xmake/issues' },
-            { text: '谁在使用 Xmake?', link: '/zh/about/who_is_using_xmake' }
+          ]
+        },
+        {
+          text: '关于',
+          items: [
+            { text: '社区', link: '/zh/about/contact' },
+            { text: '谁在使用 Xmake?', link: '/zh/about/who_is_using_xmake' },
+            { text: '认识团队', link: '/zh/about/team' },
+            { text: '关于作者', link: '/zh/about/author' },
           ]
         },
         {
@@ -176,7 +186,7 @@ function nav(): DefaultTheme.NavItem[] {
         }
       ]
     },
-    { text: '赞助', link: '/zh/about/sponsor' }
+    { text: '赞助 ❤️', link: '/zh/about/sponsor' }
   ]
 }
 
@@ -225,6 +235,8 @@ function guideSidebar(): DefaultTheme.SidebarItem[] {
         { text: '编译配置', link: 'basic-commands/build-configuration' },
         { text: '构建目标', link: 'basic-commands/build-targets' },
         { text: '运行目标', link: 'basic-commands/run-targets' },
+        { text: '运行测试', link: 'basic-commands/run-tests' },
+        { text: '清理目标', link: 'basic-commands/clean-targets' },
         { text: '安装卸载', link: 'basic-commands/install-and-uninstall' },
         { text: '打包程序', link: 'basic-commands/pack-programs' },
         { text: '交叉编译', link: 'basic-commands/cross-compilation' },
@@ -291,8 +303,10 @@ function guideSidebar(): DefaultTheme.SidebarItem[] {
       collapsed: false,
       items: [
         { text: '常见问题', link: 'best-practices/faq' },
+        { text: '配置优化', link: 'best-practices/configuration-optimization' },
         { text: '性能优化', link: 'best-practices/performance' },
         { text: 'AI 问答优化', link: 'best-practices/ai-qa-optimization' },
+        { text: '仓库打包规范', link: 'best-practices/package-spec' },
       ]
     },
     {
@@ -472,6 +486,7 @@ function examplesSidebar(): DefaultTheme.SidebarItem[] {
       text: '其他语言',
       collapsed: true,
       items: [
+        { text: 'C# 程序', link: 'other-languages/csharp' },
         { text: 'ObjC 程序', link: 'other-languages/objc' },
         { text: 'Cuda 程序', link: 'other-languages/cuda' },
         { text: 'Lex/Yacc 程序', link: 'other-languages/lex-yacc' },

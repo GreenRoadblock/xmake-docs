@@ -8,6 +8,8 @@
 $ xmake show -l rules
 ```
 
+内置规则通过 [add_rules()](/zh/api/description/project-target#add-rules) 添加到目标中使用。如需创建自定义规则，请参阅[自定义规则接口](/zh/api/description/custom-rule)。相关的策略配置请参阅[内置策略](/zh/api/description/builtin-policies)。
+
 ## mode.debug
 
 为当前工程xmake.lua添加debug编译模式的配置规则，例如：
@@ -60,8 +62,40 @@ add_rules("mode.releasedbg")
 ```
 
 ::: tip 注意
-与release模式相比，此模式还会额外开启调试符号，这通常是非常有用的。
+内置的 releasedbg 模式会生成一个没有任何符号的可执行程序，调试符号作为单独文件存在。
 :::
+
+它们在不同平台上表现一致的行为：
+
+- **一个不带调试符号的最小发布程序 + 一个单独的调试符号文件。**
+- **在 windows 上**: 发布程序 + .pdb 调试符号文件
+- **在 macOS 上**: 发布程序 + .dSYM 调试符号文件
+- **在 linux 上**: 发布程序 + .sym 调试符号文件
+
+尽管在 Linux 上，可执行程序已经剥离了调试符号，但生成的 .sym 调试符号文件已经通过 objcopy 与可执行程序关联。我们可以正常使用 gdb 加载其调试符号。
+
+```sh
+/usr/bin/objcopy --only-keep-debug build/linux/x86_64/releasedbg/test build/linux/x86_64/releasedbg/test.sym
+/usr/bin/strip -s build/linux/x86_64/releasedbg/test
+/usr/bin/objcopy --add-gnu-debuglink=build/linux/x86_64/releasedbg/test.sym build/linux/x86_64/releasedbg/test
+```
+
+gdb 会自动加载 test.sym 符号文件。
+
+```sh
+gdb build/linux/x86_64/releasedbg/test
+Reading symbols from build/linux/x86_64/releasedbg/test...
+Reading symbols from /tmp/test/build/linux/x86_64/releasedbg/test.sym...
+(gdb) b main
+Breakpoint 1 at 0x10e0: file src/main.cpp, line 3.
+(gdb) r
+Starting program: /tmp/test/build/linux/x86_64/releasedbg/test 
+Breakpoint 1, main (argc=1, argv=0x7ffd8daf0618) at src/main.cpp:3
+3	int main(int argc, char **argv) {
+(gdb) bt
+#0  main (argc=1, argv=0x7ffd8daf0618) at src/main.cpp:3
+(gdb) 
+```
 
 相当于：
 
@@ -74,6 +108,18 @@ end
 ```
 
 我们可以通过：`xmake f -m releasedbg`来切换到此编译模式。
+
+如果你想要生成带调试符号的单个可执行文件，你可以在项目配置中轻松覆盖 releasedbg 模式。
+
+```lua
+add_rules("mode.release", "mode.releasedbg")
+
+if is_mode("releasedbg") then
+    set_strip("none")
+end
+```
+
+你也可以完全自定义 releasedbg 模式规则，而不使用内置的 mode.releasedbg。
 
 ## mode.minsizerel
 
@@ -643,6 +689,10 @@ cat build/.gens/test/macosx/x86_64/release/rules/c++/bin2c/image.png.h
 如果你使用支持 C23 `#embed` 特性的编译器（如 clang 或 gcc），也可以直接使用 `#embed` 指令来嵌入二进制文件。需要先通过 `set_languages("c23")` 设置 C23 语言标准，然后使用 [add_embeddirs](project-target.md#add_embeddirs) 来设置搜索路径。这种方式更符合 C23 标准，无需生成额外的头文件。
 :::
 
+### 转换函数 <Badge type="tip" text="v3.1.0" />
+
+在v3.1.0中，xmake添加了转换函数接口。利用该接口，可以自定义被生成为头文件的二进制数据。用法请参考 [utils.bin2obj](#转换函数-1)
+
 ## utils.bin2obj
 
 v3.0.6 以上版本可以使用此规则，相比 `utils.bin2c` 具有极快的构建速度。因为它跳过了 C 代码生成和编译步骤，直接生成对象文件（COFF, ELF, Mach-O）参与链接。
@@ -689,6 +739,116 @@ int main() {
 ```
 
 此外，`glsl2spv` 和 `hlsl2spv` 规则也新增了对 `bin2obj` 的支持，可以直接将编译后的 SPIR-V 文件作为对象文件嵌入。
+
+### 转换函数 <Badge type="tip" text="v3.1.0" />
+
+在v3.1.0中，xmake添加了转换函数接口。利用该接口，可以自定义被生成为对象文件的二进制数据，如使用LZ4（[core.compress.lz4](../scripts/extension-modules/core/compress/lz4.md)）压缩文件后再生成为对象文件，嵌入程序中。
+
+#### 内联转换函数
+
+转换函数可内联在描述域中，适合简单的转换：
+
+```lua
+target("test")
+    set_kind("binary")
+    add_rules("utils.bin2obj")
+    add_files("src/*.c")
+    add_files("src/asset.bin", {transform = function (inputfile, outputfile, opt)
+        import("core.base.bytes")
+        local data = io.readfile(inputfile, {encoding = "binary"})
+        io.writefile(outputfile, data:reverse(), {encoding = "binary"})
+    end})
+```
+
+::: tip 警告
+内联转换函数无法用于生成的第三方工程文件（见[生成IDE工程文件](../../guide/extensions/builtin-plugins.md#generate-ide-project-files)）。如有需要，请使用Lua文件形式
+:::
+
+#### Lua文件形式
+
+对于更加复杂的转化，可以将转换函数单独写在Lua文件中：
+
+`xmake.lua`:
+```lua
+target("test")
+    set_kind("binary")
+    add_rules("utils.bin2obj")
+    add_files("src/*.c")
+    add_files("src/asset.bin", {transform = path.join(os.projectdir(), "transform.lua")})
+```
+
+`transform.lua`:
+```lua
+function main(inputfile, outputfile)
+    import("core.base.bytes")
+    local data = io.readfile(inputfile, {encoding = "binary"})
+    io.writefile(outputfile, data:reverse(), {encoding = "binary"})
+end
+```
+
+#### 规则级转换函数
+
+转换函数不仅可作用于文件或者文件组，还可以写成以下的形式，以作用于整个规则：
+
+```lua
+add_rules("utils.bin2obj", {
+    transform = path.join(os.projectdir(), "transform.lua")
+})
+```
+
+文件级的配置优先级高于规则级，因此规则级的转换函数仍然可以被某个具体文件覆盖。
+
+::: tip 提示
+- 在使用`io.readfile`或`io.writefile`处理二进制时，记得加入`{encoding = "binary"}`参数
+- 使用Lua形式转换函数时，最好传入由`path.join(os.projectdir(), <路径>)`得到的绝对路径
+- 可参考xmake提供的二进制处理API：[core.base.bytes](../scripts/extension-modules/core/base/bytes.md)
+- 转换函数的最后一个参数是附加的 `opt` 表，其中 `opt.target` 是当前正在构建的 target 实例
+- 转换后的文件会写到目标的自动生成目录下，并纳入依赖追踪，只有源文件真正变化时才会重新执行
+- 它底层是基于 [batchcmds:call](custom-rule.md#batchcmds-call) 实现的，我们在自己的规则里也可以使用这个接口
+:::
+
+## utils.replace <Badge type="tip" text="v3.0.9" />
+
+此规则会在源码送入编译器之前对其做文本替换。替换后的文件会写到目标的自动生成目录下，同时原始文件所在目录会被自动加入 `includedirs`，所以替换后文件里的相对 `#include` 依然能正确解析。
+
+规则带有依赖追踪，只有源文件或替换列表真正发生变化时，才会重新执行替换。
+
+### Lua 模式替换（默认）
+
+```lua
+target("foo")
+    set_kind("binary")
+    add_files("src/foo.c", {rules = "utils.replace", replaces = {
+        {"old_pattern", "new_text"},
+    }})
+```
+
+### 纯文本替换
+
+传入 `replace_plain = true` 时，匹配模式会被当作字面字符串处理，而不再是 Lua 模式。
+
+```lua
+target("foo")
+    set_kind("binary")
+    add_files("src/foo.c", {rules = "utils.replace",
+        replaces = {{"old text", "new text"}},
+        replace_plain = true})
+```
+
+### 函数式转换
+
+`replaces` 也可以是一个函数，接收文件内容并返回替换后的内容。
+
+```lua
+target("foo")
+    set_kind("binary")
+    add_files("src/foo.c", {rules = "utils.replace", replaces = function (content)
+        content = content:gsub("old", "new")
+        return content
+    end})
+```
+
+xmake 自身正是借助这条规则在新版 Lua 5.5 运行时下打补丁 `lparser.c`，从而保留 for-in 循环变量可以被重新赋值的特性。
 
 ## utils.glsl2spv
 

@@ -4,6 +4,8 @@ Xmake provides a built-in `xmake run` command, which can quickly run the built t
 
 This provides a lot of convenience, and it will also automatically bind the environment required for running to ensure that resources, dynamic libraries, etc. can be automatically loaded.
 
+To run test cases, see [Run Tests](/guide/basic-commands/run-tests). To install build artifacts to the system, see [Install and Uninstall](/guide/basic-commands/install-and-uninstall).
+
 ## Command format
 
 ```sh
@@ -90,7 +92,7 @@ $ xmake
 $ xmake run -d hello
 ```
 
-Xmake will use the debugger to load the program and run it. Currently, it supports various debuggers such as lldb, gdb, windbg, vsjitdebugger, ollydbg, etc.
+Xmake will use the debugger to load the program and run it. Currently, it supports various debuggers such as lldb, gdb, windbg, vsjitdebugger, ollydbg, nnd, etc.
 
 ```sh
 [lldb]$target create "build/hello"

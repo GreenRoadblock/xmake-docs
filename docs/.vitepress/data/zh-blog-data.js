@@ -1,6 +1,86 @@
 export const posts = [
   {
-    "title": "Xmake v3.0.6 预览版，原生 Android 应用、Flang、CUDA 13、Qt 打包",
+    "title": "Xmake v3.1.0 发布，插件仓库分发，二进制资源转换与 alignof 检测",
+    "url": "/zh/posts/xmake-update-v3.1.0",
+    "date": {
+      "time": 1786190400000,
+      "string": "August 8, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "plugin",
+      "xrepo",
+      "bin2c",
+      "bin2obj",
+      "alignof",
+      "xpack",
+      "gcc"
+    ],
+    "excerpt": "<p>在此版本中，我们重构了 <code>xmake plugin</code> 插件管理器，插件现在可以像包一样，从 xmake-repo 这样的仓库中安装，也支持从 git 地址和本地目录安装，并且能够列出内置、已安装以及仓库中可用的所有插件。</p>\n<p>此外，我们还新增了 <code>check_alignof</code> / <code>configvar_check_alignof</code> 类型对齐检测，为 <code>utils.bin2c</code> / <code>utils.bin2obj</code> 规则添加了二进制资源的 transform 支持，新增了 <code>batchcmds:call</code> 接口，<code>xmake show</code> 支持统一的 <code>--format=json</code> 输出，<code>build</code> / <code>clean</code> / <code>install</code> 等命令支持一次传入多个目标名，xpack 的安装文件列表支持内置变量，以及 gcc-16 工具链支持。</p>\n<p>以前想要分发一个 xmake 插件，只能让用户手动把插件目录拷贝到 <code>~/.xmake/plugins/</code> 下，或者自己去 clone 仓库。这个版本我们重写了 <code>xmake plugin</code> 命令，插件的安装、删除、列举现在都有了统一的入口，并且完全复用了 xmake 的包安装流程。</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.9 发布，升级 Lua 5.5，Zig C 互操作，Fil-C 与 Ascend C 工具链",
+    "url": "/zh/posts/xmake-update-v3.0.9",
+    "date": {
+      "time": 1779192000000,
+      "string": "May 19, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "lua",
+      "zig",
+      "filc",
+      "ascendc",
+      "depgraph",
+      "aria2",
+      "clang-cl"
+    ],
+    "excerpt": "<p>在此版本中，我们将内置 Lua 运行时升级到 5.5，新增了 <code>utils.replace</code> 内置规则，为 Zig 工具链添加了 C 互操作支持，并引入了两个新工具链：Fil-C（内存安全的 C/C++ 实现）和华为昇腾 Ascend C（用于 NPU 编程）。</p>\n<p>此外，我们还新增了基于 aria2 的多线程下载后端，支持以 JSON / DOT 格式导出目标和包依赖图，vsxmake 对 C# 目标生成 <code>.csproj</code> 工程，以及围绕自定义工具链、<code>clang-cl[llvm]</code> 工具集、包静态库合并等方面的多项改进。</p>\n<p>内置 Lua 运行时已从 5.4 升级到 5.5。Lua 5.5 在语法和行为上有一些改动（例如 for-in 循环变量被视为 const 局部变量、部分旧版库 API 被移除等），可能导致一些在旧版本 xmake 下能正常工作的 <code>xmake.lua</code> 配置代码出现兼容性问题。为了尽可能保持向下兼容，本次升级伴随了几项补丁，把 5.5 之前的常见语义还原回来：</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.8 发布，C# 语言支持，自定义模板与 WASI 运行",
+    "url": "/zh/posts/xmake-update-v3.0.8",
+    "date": {
+      "time": 1774353600000,
+      "string": "March 24, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "csharp",
+      "dotnet",
+      "pinvoke",
+      "wasi",
+      "nnd",
+      "templates"
+    ],
+    "excerpt": "<p>在此版本中，我们新增了 C# 语言和 dotnet 工具链支持，并支持了 C# 与 C/C++ 通过 P/Invoke 进行互操作。同时，我们引入了自定义工程模板功能，支持 <code>xmake create --list</code> 列出模板和远程模板分发。</p>\n<p>此外，我们还新增了 <code>build.release.strip</code> 策略、<code>winos.file_signature</code> 函数、WASI 目标运行支持、nnd 调试器支持以及 tarxz 打包格式。</p>\n<p>我们新增了对 C# 语言的完整支持，集成了 dotnet 工具链，可以直接在 xmake 中构建 C# 项目，包括控制台应用、共享库、多库依赖和 NuGet 包集成。</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.7 发布，包方案支持，Wasm 浏览器运行与 UTF-8 模块",
+    "url": "/zh/posts/xmake-update-v3.0.7",
+    "date": {
+      "time": 1770465600000,
+      "string": "February 7, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "verilator",
+      "alpine",
+      "nix",
+      "qt",
+      "nim",
+      "zig",
+      "wasm",
+      "utf8"
+    ],
+    "excerpt": "<p>在此版本中，我们新增了包方案 (Package Schemes) 支持，提供了更加灵活的包安装和回退机制。同时，我们改进了 Nix 包管理器支持，优化了 Verilator 构建，并新增了对 Qt SDK 动态 mkspec 的选择支持。</p>\n<p>此外，我们还支持了在浏览器中运行 Wasm 程序，支持从标准输入 (stdin) 读取脚本运行，并引入了 <code>cli.iconv</code>, <code>utf8</code> 和 <code>os.access</code> 等多个新模块和函数。</p>\n<p><code>scheme</code> 特性主要用于提供多种安装方案，每种方案可能使用不同的 url、version 和 install 逻辑。每当一种方案安装失败时，会自动尝试下一种安装方案，从而提高安装成功率。尤其是在二进制包和源码安装同时存在时，非常有用。</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.6 发布，原生 Android 应用、Flang、CUDA 13、Qt 打包",
     "url": "/zh/posts/xmake-update-v3.0.6",
     "date": {
       "time": 1765972800000,

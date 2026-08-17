@@ -22,7 +22,9 @@ export default defineAdditionalConfig({
         {
           text: 'About',
           items: [
-            { text: 'Sponsor', link: '/about/sponsor' },
+            { text: 'Sponsor ❤️', link: '/about/sponsor' },
+            { text: 'About Author', link: '/about/author' },
+            { text: 'Meet the Team', link: '/about/team' },
             { text: 'Contact', link: '/about/contact' },
             { text: 'Who is using Xmake?', link: '/about/who_is_using_xmake' },
           ]
@@ -81,21 +83,29 @@ function nav(): DefaultTheme.NavItem[] {
         {
           text: 'Resources',
           items: [
-            { text: 'Xmake Packages', link: 'https://xmake.microblock.cc/' }
+            { text: 'Xmake Packages', link: 'https://packages.xmake.io/' },
+            { text: 'Xmake Skills', link: 'https://github.com/xmake-io/xmake-skills' }
           ]
         },
         {
           text: 'Help',
           items: [
-            { text: 'Community', link: '/about/contact' },
             { text: 'Feedback', link: 'https://github.com/xmake-io/xmake/issues' },
-            { text: 'Who is using Xmake?', link: '/about/who_is_using_xmake' }
+          ]
+        },
+        {
+          text: 'About',
+          items: [
+            { text: 'Community', link: '/about/contact' },
+            { text: 'Who is using Xmake?', link: '/about/who_is_using_xmake' },
+            { text: 'Meet the Team', link: '/about/team' },
+            { text: 'About Author', link: '/about/author' },
           ]
         }
       ]
 
     },
-    { text: 'Sponsor', link: '/about/sponsor' }
+    { text: 'Sponsor ❤️', link: '/about/sponsor' }
   ]
 }
 
@@ -144,6 +154,8 @@ function guideSidebar(): DefaultTheme.SidebarItem[] {
         { text: 'Build Configuration', link: 'basic-commands/build-configuration' },
         { text: 'Build Targets', link: 'basic-commands/build-targets' },
         { text: 'Run Targets', link: 'basic-commands/run-targets' },
+        { text: 'Run Tests', link: 'basic-commands/run-tests' },
+        { text: 'Clean Targets', link: 'basic-commands/clean-targets' },
         { text: 'Install and Uninstall', link: 'basic-commands/install-and-uninstall' },
         { text: 'Pack Programs', link: 'basic-commands/pack-programs' },
         { text: 'Cross Compilation', link: 'basic-commands/cross-compilation' },
@@ -210,8 +222,10 @@ function guideSidebar(): DefaultTheme.SidebarItem[] {
       collapsed: false,
       items: [
         { text: 'FAQ', link: 'best-practices/faq' },
+        { text: 'Configuration Optimization', link: 'best-practices/configuration-optimization' },
         { text: 'Performance', link: 'best-practices/performance' },
         { text: 'AI Q&A Optimization', link: 'best-practices/ai-qa-optimization' },
+        { text: 'Xrepo Packing Specifications', link: 'best-practices/package-spec' },
       ]
     },
     {
@@ -391,6 +405,7 @@ function examplesSidebar(): DefaultTheme.SidebarItem[] {
       text: 'Other Languages',
       collapsed: true,
       items: [
+        { text: 'C# Programs', link: 'other-languages/csharp' },
         { text: 'ObjC Programs', link: 'other-languages/objc' },
         { text: 'Cuda Programs', link: 'other-languages/cuda' },
         { text: 'Lex/Yacc Programs', link: 'other-languages/lex-yacc' },

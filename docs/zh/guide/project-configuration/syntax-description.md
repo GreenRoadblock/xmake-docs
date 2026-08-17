@@ -10,6 +10,8 @@ target("test")
     add_files("src/*.c")
 ```
 
+关于描述域和脚本域中可以使用的完整接口列表，请参阅[描述域接口文档](/zh/api/description/specification)和[脚本域内置模块文档](/zh/api/scripts/builtin-modules/os)。
+
 ## 配置分离
 
 xmake.lua采用二八原则实现了描述域、脚本域两层分离式配置。
@@ -416,7 +418,7 @@ add_files("*.c")
 
 由于默认的描述域配置语法的缩进并不符合 lua 格式规范，因此 lua language server 是不支持对它进行格式化处理的。
 
-如果想要让 IDE，编辑器更好的对配置进行格式化缩进支持，我么可以通过 `do end` 的写法来处理：
+如果想要让 IDE，编辑器更好的对配置进行格式化缩进支持，我们可以通过 `do end` 的写法来处理：
 
 ```lua
 target("bar") do

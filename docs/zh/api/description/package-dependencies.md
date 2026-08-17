@@ -1,5 +1,7 @@
 # 包依赖 {#package-dependencies}
 
+关于包管理的使用教程，请参阅[添加依赖包](/zh/guide/project-configuration/add-packages)和[包管理使用指南](/zh/guide/package-management/using-official-packages)。在脚本域中访问包实例的接口，请参阅 [package 实例接口](/zh/api/scripts/package-instance)。
+
 ## package
 
 - 仓库依赖包定义描述
@@ -339,8 +341,9 @@ add_versionfiles(file: <string>)
 例如：
 
 ```lua
-package("libcurl")
+package("zlib")
     add_versionfiles("versions.txt")
+end
 ```
 
 ```sh
@@ -351,6 +354,46 @@ package("libcurl")
 7.31.0 a73b118eececff5de25111f35d1d0aafe1e71afdbb83082a8e44d847267e3e08
 ...
 ```
+
+## set_sourcedir
+
+- 设置包的源码目录
+
+#### 函数原型
+
+::: tip API
+```lua
+set_sourcedir(sourcedir: <string>)
+```
+:::
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| sourcedir | 包源码目录路径 |
+
+#### 用法说明
+
+设置包的源码目录路径，通常用于本地源码包的集成。当需要集成项目中的本地源码库而不是远程下载安装时，可以通过此接口指定源码目录。
+
+例如：
+
+```lua
+package("foo")
+    set_sourcedir(path.join(os.scriptdir(), "foo"))
+    on_install(function (package)
+        local configs = {}
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        import("package.tools.cmake").install(package, configs)
+    end)
+end
+```
+
+::: tip 注意
+如果仅仅本地源码集成，我们不需要额外设置 `add_urls` 和 `add_versions`。
+:::
 
 ## add_patches
 
@@ -640,7 +683,39 @@ add_defines(defines: <string|array>, ...)
 
 可以对集成的包对外输出一些特定的定义选项。
 
+
+## add_schemes
+
+- 添加包方案
+
+#### 函数原型
+
+::: tip API
+```lua
+add_schemes(schemes: <string|array>, ...)
+```
+:::
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| schemes | 方案名称字符串或数组 |
+| ... | 可变参数，可传入多个方案名称 |
+
+#### 用法说明
+
+定义包的可用方案列表。顺序很重要：如果没有显式选择，第一个方案是默认方案。
+
+关于方案的配置，请参考 [package:scheme](/zh/api/scripts/package-instance.html#package-scheme)。
+
+```lua
+package("mypkg")
+    add_schemes("binary", "source")
+```
+
 ## add_configs
+
 
 - 添加包配置
 
@@ -652,7 +727,8 @@ add_configs(name: <string>, {
     description = <string>,
     default = <string|boolean|number>,
     values = <array>,
-    type = <string>
+    type = <string>,
+    readonly = <boolean>
 })
 ```
 :::
@@ -667,6 +743,7 @@ add_configs(name: <string>, {
 | default | 配置的默认值 |
 | values | 允许的值数组 |
 | type | 配置类型："string", "boolean", "number" |
+| readonly | 阻止对配置值的修改 |
 
 #### 用法说明
 
@@ -707,6 +784,19 @@ The package info of project:
 
 ```lua
 add_requires("pcre2", {configs = {bitwidth = 16}})
+```
+
+可以覆盖标准配置，例如强制使用某个值：
+
+```lua
+package("my-package")
+    add_configs("shared", {description = "Build shared library.", default = false, type = "boolean", readonly = true})
+```
+
+`my-package` 只能构建为 `shared`，如果将 `shared` 的值设置为 `false`，则会发出警告。
+
+```
+warning: configs.shared is readonly in package(my-package), it's always true
 ```
 
 ## add_extsources

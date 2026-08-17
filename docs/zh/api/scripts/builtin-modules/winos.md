@@ -53,6 +53,79 @@ win81    = "6.3"
 win10    = "10.0"
 ```
 
+## winos.processes
+
+- 获取当前系统进程列表
+
+#### 函数原型
+
+::: tip API
+```lua
+winos.processes()
+```
+:::
+
+#### 参数说明
+
+此函数不需要参数。
+
+#### 返回值
+
+返回一个数组，每个元素是一个进程信息表：
+
+| 字段 | 描述 |
+|------|------|
+| name | 进程可执行文件名 |
+| pid | 进程 id |
+| parent_pid | 父进程 id |
+
+非 Windows 平台返回 nil。
+
+#### 用法说明
+
+```lua
+local processes = winos.processes()
+if processes then
+    for _, p in ipairs(processes) do
+        print(p.pid, p.parent_pid, p.name)
+    end
+end
+```
+
+## winos.set_error_mode
+
+- 设置 Windows 进程错误模式
+
+#### 函数原型
+
+::: tip API
+```lua
+winos.set_error_mode(mode: <integer>)
+```
+:::
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| mode | 进程错误模式值（对应 Windows API `SetErrorMode`） |
+
+#### 返回值
+
+返回之前的错误模式值。
+
+#### 用法说明
+
+禁用系统错误弹窗（例如：关键错误、GP fault、打开文件失败对话框等）：
+
+```lua
+local SEM_FAILCRITICALERRORS     = 0x0001
+local SEM_NOGPFAULTERRORBOX      = 0x0002
+local SEM_NOOPENFILEERRORBOX     = 0x8000
+
+local oldmode = winos.set_error_mode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX)
+```
+
 ## winos.registry_keys
 
 - 获取注册表建列表
@@ -140,3 +213,48 @@ winos.registry_query(keypath: <string>)
 local value, errors = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug")
 local value, errors = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger")
 ```
+
+## winos.file_signature <Badge type="tip" text="v3.0.8" />
+
+- 获取文件的数字签名信息
+
+#### 函数原型
+
+::: tip API
+```lua
+winos.file_signature(filepath: <string>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| filepath | Windows 可执行文件路径 |
+
+#### 返回值说明
+
+| 类型 | 描述 |
+|------|------|
+| table/nil | 返回包含签名信息的 table，文件无签名时返回 nil |
+
+返回的 table 包含以下字段：
+- `is_signed`：文件是否已签名
+- `is_trusted`：签名是否受操作系统信任
+- `signer_name`：签名者名称
+
+#### 用法说明
+
+```lua
+local info = winos.file_signature("C:\\Windows\\System32\\notepad.exe")
+if info then
+    print(info.is_signed)    -- true
+    print(info.is_trusted)   -- true
+    print(info.signer_name)  -- "Microsoft Windows"
+end
+```
+
+::: tip 注意
+此接口仅在 Windows 上可用。
+:::

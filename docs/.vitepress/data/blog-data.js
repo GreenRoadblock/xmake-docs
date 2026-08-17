@@ -1,6 +1,86 @@
 export const posts = [
   {
-    "title": "Xmake v3.0.6 Preview, Android Native Apps, Flang, AppImage/dmg Support",
+    "title": "Xmake v3.1.0 Released, Plugin Distribution and Binary Asset Transform",
+    "url": "/posts/xmake-update-v3.1.0",
+    "date": {
+      "time": 1786190400000,
+      "string": "August 8, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "plugin",
+      "xrepo",
+      "bin2c",
+      "bin2obj",
+      "alignof",
+      "xpack",
+      "gcc"
+    ],
+    "excerpt": "<p>In this release, we reworked the <code>xmake plugin</code> manager. Plugins can now be installed from repositories such as xmake-repo just like packages, and also from git urls and local directories, with a unified listing of built-in, installed and available plugins.</p>\n<p>Additionally, we added <code>check_alignof</code> / <code>configvar_check_alignof</code> type alignment detection, a <code>transform</code> config for the <code>utils.bin2c</code> / <code>utils.bin2obj</code> rules to preprocess embedded binary assets, a new <code>batchcmds:call</code> interface, unified <code>--format=json</code> output for <code>xmake show</code>, multiple target nam...</p>\n<p>Distributing an xmake plugin used to mean asking users to copy the plugin directory into <code>~/.xmake/plugins/</code> by hand, or to clone the repository themselves. In this release we rewrote the <code>xmake plugin</code> command: installing, removing and listing plugins now all go through a single entry point, and th...</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.9 Released, Lua 5.5 Upgrade, Zig C Interop and Ascend C",
+    "url": "/posts/xmake-update-v3.0.9",
+    "date": {
+      "time": 1779192000000,
+      "string": "May 19, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "lua",
+      "zig",
+      "filc",
+      "ascendc",
+      "depgraph",
+      "aria2",
+      "clang-cl"
+    ],
+    "excerpt": "<p>In this release, we upgraded the built-in Lua runtime to 5.5, added a new <code>utils.replace</code> built-in rule, brought C interop to the Zig toolchain, and introduced two new toolchains: Fil-C (a memory-safe C/C++ implementation) and Huawei Ascend C (for NPU programming).</p>\n<p>Additionally, we added a multi-threaded aria2 download backend, support for exporting target and package dependency graphs as JSON or DOT, <code>.csproj</code> generation for C# targets in vsxmake, and many other improvements around custom toolchains, the <code>clang-cl[llvm]</code> toolset, and package archive merging.</p>\n<p>The built-in Lua runtime has been upgraded from 5.4 to 5.5. Lua 5.5 introduces some syntactic and behavioral changes (for example, the for-in control variable is now treated as a const local, and a few legacy library APIs have been removed) that could break existing <code>xmake.lua</code> configurations writte...</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.8 Released, C# Language Support, Custom Templates and WASI Running",
+    "url": "/posts/xmake-update-v3.0.8",
+    "date": {
+      "time": 1774353600000,
+      "string": "March 24, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "csharp",
+      "dotnet",
+      "pinvoke",
+      "wasi",
+      "nnd",
+      "templates"
+    ],
+    "excerpt": "<p>In this release, we have added C# language and dotnet toolchain support, along with C# and C/C++ interop support via P/Invoke. We also introduced custom project templates with <code>xmake create --list</code> for listing templates and remote template distribution.</p>\n<p>Additionally, we added the <code>build.release.strip</code> policy, <code>winos.file_signature</code> function, WASI target running support, nnd debugger support, and the tarxz pack format.</p>\n<p>We have added full C# language support with dotnet toolchain integration, allowing you to build C# projects directly with xmake, including console apps, shared libraries, multi-library dependencies, and NuGet package integration.</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.7 Released, Package Schemes, Wasm in Browser and UTF-8 Module",
+    "url": "/posts/xmake-update-v3.0.7",
+    "date": {
+      "time": 1770465600000,
+      "string": "February 7, 2026"
+    },
+    "author": "Ruki",
+    "tags": [
+      "xmake",
+      "verilator",
+      "alpine",
+      "nix",
+      "qt",
+      "nim",
+      "zig",
+      "wasm",
+      "utf8"
+    ],
+    "excerpt": "<p>In this release, we have added support for Package Schemes, providing more flexible package installation and fallback mechanisms. We also improved Nix package manager support, optimized Verilator builds, and added support for Qt SDK dynamic mkspec selection.</p>\n<p>Additionally, we now support running Wasm programs in the browser, reading scripts from standard input (stdin), and introduced several new modules and functions, such as <code>cli.iconv</code>, <code>utf8</code>, and <code>os.access</code>.</p>\n<p>The <code>scheme</code> feature is mainly used to provide multiple installation schemes, where each scheme may use different urls, versions, and install logic. Whenever one scheme fails to install, Xmake will automatically try the next installation scheme, thereby improving the installation success rate. This...</p>\n"
+  },
+  {
+    "title": "Xmake v3.0.6 Released, Android Native Apps, Flang, AppImage/dmg Support",
     "url": "/posts/xmake-update-v3.0.6",
     "date": {
       "time": 1765972800000,
@@ -474,7 +554,7 @@ export const posts = [
       "mirror",
       "package"
     ],
-    "excerpt": "<p>Each time you install a package by the built-in package manager of xmake, you must download the corresponding package source code, and then perform local compilation and installation integration. This is for some large packages that compile very slowly, and some packages that rely on a lot of compil...</p>\n<p>Especially on windows, not only the dependence of the third party package on the compilation environment is more complicated, but also many packages and compilation are very slow, such as boost, openssl and so on.</p>\n<p>To this end, we implement cloud pre-compilation of packages based on github action, and pre-compile all commonly used packages, and then store them in [build-artifacts](https://github.com/xmake-mirror/build- artifacts) under Releases of the repository.</p>\n"
+    "excerpt": "<p>Each time you install a package by the built-in package manager of xmake, you must download the corresponding package source code, and then perform local compilation and installation integration. This is for some large packages that compile very slowly, and some packages that rely on a lot of compil...</p>\n<p>Especially on windows, not only the dependence of the third party package on the compilation environment is more complicated, but also many packages and compilation are very slow, such as boost, openssl and so on.</p>\n<p>To this end, we implement cloud pre-compilation of packages based on github action, and pre-compile all commonly used packages, and then store them in <a href=\"https://github.com/xmake-mirror/build-artifacts\">build-artifacts</a> under Releases of the repository.</p>\n"
   },
   {
     "title": "xmake v2.5.4 Released, Support apt/portage package manager and improve xrepo shell",

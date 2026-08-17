@@ -2,6 +2,8 @@
 
 This page describes the interface for `package` of functions like `on_load()`, `on_install()` or `on_test()` of the [Package Dependencies](/api/description/package-dependencies)
 
+For defining package dependencies in the description domain, see [Package Dependencies API](/api/description/package-dependencies). For package management tutorials, see [Adding Packages](/guide/project-configuration/add-packages).
+
 ## package:name
 
 - Get the name of the package
@@ -882,7 +884,71 @@ No parameters required for this function.
 package:addenv("PATH", "bin", "lib")
 ```
 
+
+## package:scheme
+
+- Get the scheme instance by name
+
+#### Function Prototype
+
+::: tip API
+```lua
+package:scheme(name: <string>)
+```
+:::
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| name | Scheme name |
+
+#### Usage
+
+Retrieves the scheme instance by name. This is used to configure scheme-specific settings (URLs, versions, hashes, etc.), typically inside `on_source` or `on_load`.
+
+```lua
+on_source(function (package)
+    -- Configure the 'binary' scheme
+    local binary = package:scheme("binary")
+    binary:add("urls", "https://example.com/mypkg-v$(version)-bin.zip")
+    binary:add("versions", "1.0.0", "<sha256_of_binary>")
+end)
+```
+
+## package:current_scheme
+
+- Get the currently selected scheme
+
+#### Function Prototype
+
+::: tip API
+```lua
+package:current_scheme()
+```
+:::
+
+#### Parameter Description
+
+No parameters required for this function.
+
+#### Usage
+
+Retrieves the currently selected scheme. This is useful in `on_install` to determine which build logic to execute.
+
+```lua
+on_install(function (package)
+    local scheme = package:current_scheme()
+    if scheme and scheme:name() == "binary" then
+        -- Install logic for precompiled binary
+    else
+        -- Build logic for source
+    end
+end)
+```
+
 ## package:versions
+
 
 - Get all version strings of the package. Returns a table containing all versions as strings
 

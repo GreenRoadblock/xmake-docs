@@ -2,6 +2,8 @@
 
 Xmake mainly provides the following three packaging methods for distributing the target program externally:
 
+For installing build artifacts, see [Install and Uninstall](/guide/basic-commands/install-and-uninstall). For the complete XPack API, see [XPack API](/api/description/xpack-interfaces).
+
 ## Generate local package {#local-package}
 
 Through the `xmake package` command, we can generate a local package with an xmake.lua configuration file, which contains all the target program binaries and can be introduced and used through the `add_requires` package management interface.
@@ -62,8 +64,8 @@ The last packaging method is the most powerful, implemented through the `xmake p
 - Windows NSIS binary installation package
 - Windows WIX binary installation package
 - runself (shell) self-compiled installation package
-- zip/tar.gz binary package
-- zip/tar.gz source package
+- zip/tar.gz/tar.xz binary package
+- zip/tar.gz/tar.xz source package
 - RPM binary installation package
 - SRPM source installation package
 - DEB binary installation package

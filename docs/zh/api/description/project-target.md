@@ -2,6 +2,8 @@
 
 定义和设置子工程模块，每个`target`对应一个子工程，最后会生成一个目标程序，有可能是可执行程序，也有可能是库模块。
 
+关于如何快速上手目标配置，请参阅[配置目标指南](/zh/guide/project-configuration/configure-targets)。在脚本域（如 `on_load`、`on_build` 等回调中）访问目标实例的接口，请参阅 [target 实例接口](/zh/api/scripts/target-instance)。
+
 :::tip 注意
 target的接口，都是可以放置在target外面的全局作用域中的，如果在全局中设置，那么会影响所有子工程target。
 :::
@@ -3220,7 +3222,7 @@ target("test")
 
 相关背景细节见：[#5109](https://github.com/xmake-io/xmake/issues/5109)
 
-2.9.4 之后，我们新增了 `add_rpathdirs("xxx", {install_only = true})` ，可以单独配置安装后的 rpath 路径。
+2.9.4 之后，我们新增了 `add_rpathdirs("xxx", {installonly = true})` ，可以单独配置安装后的 rpath 路径。
 
 ## add_includedirs
 
@@ -4033,6 +4035,46 @@ add_cugencodes("native")
 
 ```lua
 add_cugencodes("sm_60")
+```
+
+## add_ascnpuarchs <Badge type="tip" text="v3.0.9" />
+
+### 添加华为昇腾 Ascend C 的 NPU 架构
+
+#### 函数原型
+
+::: tip API
+```lua
+add_ascnpuarchs(archs: <string|array>, ...)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| archs | 昇腾 NPU 架构字符串或数组，如 "dav-2201" |
+| ... | 可变参数，可传入多个 NPU 架构字符串 |
+
+#### 用法说明
+
+配合 [Ascend C 工具链](custom-toolchain.md) 一起使用，为 `.asc`（Ascend C 内核）和 `.aicpu`（AI-CPU）源文件指定目标 NPU 架构。该值会映射成 Bisheng 编译器的 `--npu-arch=...` 参数。
+
+```lua
+target("ascendc_mixed")
+    set_kind("binary")
+    add_files("src/main.asc", "src/helper.aicpu")
+    add_ascnpuarchs("dav-2201")
+```
+
+也支持指定多个架构：
+
+```lua
+target("ascendc_mixed")
+    set_kind("binary")
+    add_files("src/main.asc")
+    add_ascnpuarchs("dav-2201", "dav-2202")
 ```
 
 ## add_ldflags
@@ -6338,6 +6380,20 @@ target("test")
 ```lua
 target("test")
     add_tests("testname", {plain = true, pass_outputs = "foo", fail_outputs = "hello"})
+```
+
+我们也可以通过 `pass_output_files` 和 `fail_output_files` 来匹配文件内容，里面的路径是相对于当前 `xmake.lua` 脚本目录的。
+
+`pass_output_files` 指定的文件内容将作为期望的标准输出，如果实际输出跟文件内容匹配，则测试通过。
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.cpp")
+    add_tests("test1", {
+        runargs = {"arg1"},
+        pass_output_files = "test1.out"
+    })
 ```
 
 #### 配置测试组

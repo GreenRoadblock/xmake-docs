@@ -5,6 +5,8 @@ The string module is a native module of lua. For details, see: [lua official man
 
 It has been extended in xmake to add some extension interfaces:
 
+For table operations, see the [table module](/api/scripts/builtin-modules/table). For file I/O, see the [io module](/api/scripts/builtin-modules/io).
+
 ## string.startswith
 
 - Determine if the beginning of the string matches
@@ -33,6 +35,8 @@ if s:startswith("hello") then
     print("match")
 end
 ```
+
+See also [string.endswith](#string-endswith) for checking string endings.
 
 ## string.endswith
 
@@ -150,6 +154,8 @@ string.trim("    hello xmake!    ")
 
 The result is: "hello xmake!"
 
+To trim only the left side, use [string.ltrim](#string-ltrim); for the right side only, use [string.rtrim](#string-rtrim).
+
 ## string.ltrim
 
 - Remove the whitespace character to the left of the string
@@ -203,3 +209,187 @@ string.rtrim("    hello xmake!    ")
 ```
 
 The result is: "    hello xmake!"
+
+## string.lastof
+
+- Find the position of the last occurrence of a substring
+
+#### Function Prototype
+
+::: tip API
+```lua
+string.lastof(str: <string>, pattern: <string>, plain?: <boolean>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| str | String to search |
+| pattern | Pattern to match |
+| plain | Optional. Whether to use plain text matching, default is false |
+
+#### Usage
+
+```lua
+print(("src/test/file.lua"):lastof("/", true))  -- Output: 10
+print(("abc.def.ghi"):lastof("%.", false))       -- Output: 8
+```
+
+## string.replace
+
+- Replace text in a string
+
+#### Function Prototype
+
+::: tip API
+```lua
+string.replace(str: <string>, old: <string>, new: <string>, opt?: <table>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| str | String to process |
+| old | Old string to replace |
+| new | New replacement string |
+| opt | Optional. Options table, supports `{plain = true}` for plain text replacement |
+
+#### Usage
+
+By default, uses Lua pattern matching for replacement:
+
+```lua
+print(("hello world"):replace("world", "xmake"))
+-- Output: hello xmake
+```
+
+Use plain text mode (avoids special characters being treated as patterns):
+
+```lua
+print(("hello (world)"):replace("(world)", "xmake", {plain = true}))
+-- Output: hello xmake
+```
+
+To replace content directly in a file, use [io.replace](/api/scripts/builtin-modules/io#io-replace) or [io.gsub](/api/scripts/builtin-modules/io#io-gsub).
+
+## string.serialize
+
+- Serialize an object to a string
+
+#### Function Prototype
+
+::: tip API
+```lua
+string.serialize(object: <any>, opt?: <table>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| object | Object to serialize |
+| opt | Optional. Options table, supports `{strip = true, binary = false, indent = true}` |
+
+#### Usage
+
+```lua
+local str = string.serialize({a = 1, b = "hello"})
+print(str)
+```
+
+The reverse operation is [string.deserialize](#string-deserialize), which restores a serialized string back to an object. To serialize and save an object to a file, use [io.save](/api/scripts/builtin-modules/io#io-save).
+
+## string.deserialize
+
+- Deserialize a string to an object
+
+#### Function Prototype
+
+::: tip API
+```lua
+string.deserialize(str: <string>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| str | String to deserialize |
+
+#### Usage
+
+```lua
+local obj = ("{a = 1, b = 'hello'}"):deserialize()
+print(obj.a)  -- Output: 1
+print(obj.b)  -- Output: hello
+```
+
+The reverse operation is [string.serialize](#string-serialize). To load serialized data from a file, use [io.load](/api/scripts/builtin-modules/io#io-load).
+
+## string.ipattern
+
+- Generate a case-insensitive matching pattern
+
+#### Function Prototype
+
+::: tip API
+```lua
+string.ipattern(pattern: <string>, brackets?: <boolean>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| pattern | Lua pattern string |
+| brackets | Optional. Whether to also convert letters inside brackets `[]`, default is false |
+
+#### Usage
+
+```lua
+print(string.ipattern("src/.*%.c"))
+-- Output: [sS][rR][cC]/.*%.[cC]
+
+print(("SRC/test.C"):match(string.ipattern("src/.*%.c")))
+-- Output: SRC/test.C
+```
+
+## string.levenshtein
+
+- Compute the Levenshtein (edit) distance between two strings
+
+#### Function Prototype
+
+::: tip API
+```lua
+string.levenshtein(str1: <string>, str2: <string>, opt?: <table>)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| str1 | First string |
+| str2 | Second string |
+| opt | Optional. Options table, supports `{sub = 1, ins = 1, del = 1}` for substitution/insertion/deletion costs |
+
+#### Usage
+
+```lua
+print(("hello"):levenshtein("hallo"))  -- Output: 1
+print(("kitten"):levenshtein("sitting"))  -- Output: 3
+```

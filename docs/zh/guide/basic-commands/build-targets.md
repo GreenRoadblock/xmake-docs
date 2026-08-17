@@ -4,6 +4,8 @@
 
 这里我们再来详细讲解下，首先，我们先看下它的完整命令格式。
 
+关于构建前的配置选项（如平台、架构等），请参阅[构建配置](/zh/guide/basic-commands/build-configuration)。如需交叉编译，请参阅[交叉编译](/zh/guide/basic-commands/cross-compilation)。
+
 ## 命令格式
 
 ```sh
@@ -45,6 +47,18 @@ $ xmake build foo
 :::tip 注意
 这个时候，需要写全 build 子命令，否则目标名可能会跟其他子命令冲突。
 :::
+
+## 构建多个目标 <Badge type="tip" text="v3.1.0" />
+
+在 v3.1.0 之后，我们可以一次传入多个目标名。
+
+```sh
+$ xmake build foo bar test
+```
+
+重复的目标名会被自动去重，不存在的目标名会在执行前统一检查并报错，同时给出相近目标名的提示。
+
+`xmake clean`、`xmake install`、`xmake uninstall`、`xmake package` 和 `xmake format` 也同样支持。
 
 ## 重新构建目标
 

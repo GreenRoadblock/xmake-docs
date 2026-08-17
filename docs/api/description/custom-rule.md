@@ -2,6 +2,8 @@
 
 After the 2.2.1 release, xmake not only natively supports the construction of multi-language files, but also allows users to implement complex unknown file builds by custom building rules.
 
+For a tutorial on custom rules, see the [Custom Rules Guide](/guide/project-configuration/custom-rule). For a list of built-in rules, see [Built-in Rules Reference](/api/description/builtin-rules).
+
 Custom build rules can have a set of file extensions associated to them using `set_extensions`.
 Once these extensions are associated to the rule a later call to `add_files` will automatically use this custom rule.
 Here is an example rule that will use Pandoc to convert markdown files added to a build target in to HTML files:
@@ -595,6 +597,29 @@ batchcmds:mkdir("/xxx") - and cp, mv, rm, ln ..
 batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir, languages = (sourcekind == "cxx" and "c++11")}})
 batchcmds:link(objectfiles, targetfile, {configs = {linkdirs = ""}})
 ```
+
+### batchcmds:call <Badge type="tip" text="v3.1.0" />
+
+Since v3.1.0, we can also register a plain Lua function as a build command with `batchcmds:call`, instead of spawning a subprocess through `batchcmds:vrunv`.
+
+```lua
+rule("myrule")
+    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        batchcmds:call(function (inputfile, outputfile, opt)
+            io.writefile(outputfile, io.readfile(inputfile))
+        end, {sourcefile, target:autogenfile(sourcefile)}, {name = "myrule/copy", target = target})
+    end)
+```
+
+The given function is forked into the current sandbox before running, so `import()`, `os.*`, `io.*` and the other sandbox interfaces can be used inside its body as usual. The second argument is the argument list passed to the function, and the third one is an extra options table appended as its last argument.
+
+The first argument can also be the path of a Lua script file, in which case it behaves exactly like `batchcmds:lua(...)`.
+
+This is what the `transform` config of [utils.bin2c](builtin-rules.md#utils-bin2c) and [utils.bin2obj](builtin-rules.md#utils-bin2obj) is built on.
+
+::: tip NOTE
+A raw Lua function cannot be exported by the vs/cmake project generators, they will skip it with a warning. Use the script file form if your rule needs to support project generation.
+:::
 
 At the same time, we also simplify the configuration of dependency execution in it. The following is a complete example:
 

@@ -9,6 +9,8 @@ We can view the complete list of built-in rules by running the following command
 $ xmake show -l rules
 ```
 
+Built-in rules are applied to targets via [add_rules()](/api/description/project-target#add-rules). To create custom rules, see [Custom Rule API](/api/description/custom-rule). For related policy configurations, see [Built-in Policies](/api/description/builtin-policies).
+
 ## mode.debug
 
 Add the configuration rules for the debug compilation mode for the current project xmake.lua, for example:
@@ -57,8 +59,40 @@ add_rules("mode.releasedbg")
 ```
 
 ::: tip NOTE
-Compared with the release mode, this mode will also enable additional debugging symbols, which is usually very useful.
+The built-in releasedbg mode generates an executable program without any symbols, and the debugging symbols exist as separate files.
 :::
+
+They exhibit consistent behavior across different platforms:
+
+- **A minimal release program without debug symbols + A separate debug symbol file.**
+- **on windows**: release program + .pdb debug symbol file
+- **on macOS**: release program + .dSYM debug symbol file
+- **on linux**: release program + .sym debug symbol file
+
+Although on Linux, the executable program has stripped its debug symbols, the generated .sym debug symbol file has already been associated with the executable program via objcopy. We can use gdb to load its debug symbols normally.
+
+```sh
+/usr/bin/objcopy --only-keep-debug build/linux/x86_64/releasedbg/test build/linux/x86_64/releasedbg/test.sym
+/usr/bin/strip -s build/linux/x86_64/releasedbg/test
+/usr/bin/objcopy --add-gnu-debuglink=build/linux/x86_64/releasedbg/test.sym build/linux/x86_64/releasedbg/test
+```
+
+gdb will automatically load the test.sym symbol file.
+
+```sh
+gdb build/linux/x86_64/releasedbg/test
+Reading symbols from build/linux/x86_64/releasedbg/test...
+Reading symbols from /tmp/test/build/linux/x86_64/releasedbg/test.sym...
+(gdb) b main
+Breakpoint 1 at 0x10e0: file src/main.cpp, line 3.
+(gdb) r
+Starting program: /tmp/test/build/linux/x86_64/releasedbg/test 
+Breakpoint 1, main (argc=1, argv=0x7ffd8daf0618) at src/main.cpp:3
+3	int main(int argc, char **argv) {
+(gdb) bt
+#0  main (argc=1, argv=0x7ffd8daf0618) at src/main.cpp:3
+(gdb) 
+```
 
 Equivalent to:
 
@@ -71,6 +105,18 @@ end
 ```
 
 We can switch to this compilation mode by `xmake f -m releasedbg`.
+
+If you want to generate a single executable with debug symbols, you can easily override the releasedbg mode in your project configuration.
+
+```lua
+add_rules("mode.release", "mode.releasedbg")
+
+if is_mode("releasedbg") then
+    set_strip("none")
+end
+```
+
+You can also fully customize the releasedbg mode rules without using the built-in mode.releasedbg.
 
 ## mode.minsizerel
 
@@ -654,6 +700,10 @@ cat build/.gens/test/macosx/x86_64/release/rules/c++/bin2c/image.png.h
 If you are using a compiler that supports the C23 `#embed` feature (such as clang or gcc), you can also use the `#embed` directive directly to embed binary files. You need to set the C23 language standard first via `set_languages("c23")`, and then use [add_embeddirs](project-target.md#add_embeddirs) to set the search path. This approach is more aligned with the C23 standard and does not require generating additional header files.
 :::
 
+### Transform <Badge type="tip" text="v3.1.0" />
+
+Since v3.1.0, binary files can be transformed before being generated as a header. Transform functions are assigned in the same way as [utils.bin2obj](#transform-1).
+
 ## utils.bin2obj
 
 New rule added in v3.0.6 to convert binary files to object files and link them into the target program.
@@ -675,7 +725,7 @@ target("myapp")
     add_files("assets/data.bin", {zeroend = true})
 ```
 
-### Access Data
+### Accessing Data
 
 In C/C++ code, we can access the embedded data via symbols. The symbol name generation rule is: `_binary_<filename>_start` and `_binary_<filename>_end`.
 Non-alphanumeric characters in the filename are replaced with underscores.
@@ -699,6 +749,116 @@ int main() {
     return 0;
 }
 ```
+
+### Transform <Badge type="tip" text="v3.1.0" />
+
+Since v3.1.0, binary files can be transformed before converting into object files by using the newly added `transform` parameter. For example, an asset file can be compressed using LZ4 ([core.compress.lz4](../scripts/extension-modules/core/compress/lz4.md)) before embedding into the application. See below for detailed usage.
+
+#### Inline Function
+
+Inline function can be used to transform the binary file. Suitable for short and simple conversions.
+
+```lua
+target("test")
+    set_kind("binary")
+    add_rules("utils.bin2obj")
+    add_files("src/*.c")
+    add_files("src/asset.bin", {transform = function (inputfile, outputfile, opt)
+        import("core.base.bytes")
+        local data = io.readfile(inputfile, {encoding = "binary"})
+        io.writefile(outputfile, data:reverse(), {encoding = "binary"})
+    end})
+```
+
+::: tip WARNING
+Inline transform functions are not compatible with [generated projects](../../guide/extensions/builtin-plugins.md#generate-ide-project-files). Write the function in a lua file instead.
+:::
+
+#### Function In Lua File
+
+For more complex transforms, writing the function in a separate lua file keeps the code clear.
+
+`xmake.lua`:
+```lua
+target("test")
+    set_kind("binary")
+    add_rules("utils.bin2obj")
+    add_files("src/*.c")
+    add_files("src/asset.bin", {transform = path.join(os.projectdir(), "transform.lua")})
+```
+
+`transform.lua`:
+```lua
+function main(inputfile, outputfile)
+    import("core.base.bytes")
+    local data = io.readfile(inputfile, {encoding = "binary"})
+    io.writefile(outputfile, data:reverse(), {encoding = "binary"})
+end
+```
+
+#### Per-rule Transform Function
+
+Besides writing a function for each file or file group, a transform function can also be applied across the entire rule scope.
+
+```lua
+add_rules("utils.bin2obj", {
+    transform = path.join(os.projectdir(), "transform.lua")
+})
+```
+
+The per-file config takes precedence over the per-rule one, so a rule-scoped transform can still be overridden for a specific file.
+
+::: tip NOTE
+- Remember to pass argument `{encoding = "binary"}` to `io.readfile` or `io.writefile` when reading or writing binary data
+- It's preferred to pass an absolute path (formed by joining `os.projectdir()` with the relative path) to the transform lua file
+- See [core.base.bytes](../scripts/extension-modules/core/base/bytes.md) for handling binary data
+- The transform receives an extra `opt` table as its last argument, `opt.target` is the target instance being built
+- The transformed file is written under the target's auto-generated directory and tracked by the dependency system, so it is only re-run when the source file actually changes
+- Under the hood this is implemented with [batchcmds:call](custom-rule.md#batchcmds-call), which is also available in your own rules
+:::
+
+## utils.replace <Badge type="tip" text="v3.0.9" />
+
+This rule applies in-memory text substitutions on a source file before it is fed to the compiler. The rewritten file is written under the target's auto-generated directory, and the original file's directory is automatically added to `includedirs` so relative `#include` directives in the rewritten file still resolve.
+
+The rule uses dependency tracking, so the substitution is only re-run when the source file or the replace list actually changes.
+
+### Lua-pattern replacement (default)
+
+```lua
+target("foo")
+    set_kind("binary")
+    add_files("src/foo.c", {rules = "utils.replace", replaces = {
+        {"old_pattern", "new_text"},
+    }})
+```
+
+### Plain-text replacement
+
+When `replace_plain = true` is passed, the patterns are treated as literal text instead of Lua patterns.
+
+```lua
+target("foo")
+    set_kind("binary")
+    add_files("src/foo.c", {rules = "utils.replace",
+        replaces = {{"old text", "new text"}},
+        replace_plain = true})
+```
+
+### Function-based transform
+
+`replaces` also accepts an arbitrary function that takes the file content and returns the rewritten content.
+
+```lua
+target("foo")
+    set_kind("binary")
+    add_files("src/foo.c", {rules = "utils.replace", replaces = function (content)
+        content = content:gsub("old", "new")
+        return content
+    end})
+```
+
+This rule is what xmake itself uses internally to patch the bundled Lua 5.5 `lparser.c`, so that writing to the for-in control variable is still allowed under the new runtime.
 
 ## utils.glsl2spv
 

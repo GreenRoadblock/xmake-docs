@@ -8,6 +8,44 @@
 os 模块里面只有部分readonly接口（例如：`os.getenv`, `os.arch`）是可以在描述域中使用，其他接口只能在脚本域中使用，例如：`os.cp`, `os.rm`等
 :::
 
+文件读写操作请参阅 [io 模块](/zh/api/scripts/builtin-modules/io)，路径操作请参阅 [path 模块](/zh/api/scripts/builtin-modules/path)。
+
+## os.access
+
+- 检查文件访问权限
+
+#### 函数原型
+
+::: tip API
+```lua
+os.access(path: <string>, mode: <string>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| path | 文件或目录路径 |
+| mode | 访问模式：'r' (读), 'w' (写), 'x' (执行) |
+
+#### 用法说明
+
+```lua
+if os.access("file", "r") then
+    print("readable")
+end
+
+if os.access("file", "w") then
+    print("writable")
+end
+
+if os.access("file", "x") then
+    print("executable")
+end
+```
+
 ## os.cp
 
 - 复制文件或目录
@@ -462,6 +500,7 @@ if os.exists("$(builddir)/libxxx.a") then
 end
 ```
 
+
 ## os.islink
 
 - 判断是否为符号链接
@@ -735,6 +774,69 @@ os.runv("echo", {"hello", "xmake!"})
 
 ```lua
 os.runv("echo", {"hello", "xmake!"}, {envs = {PATH = "xxx;xx", CFLAGS = "xx"}})
+```
+
+## os.vrun
+
+- 仅在 verbose 模式回显并运行原生 shell 命令
+
+#### 函数原型
+
+::: tip API
+```lua
+os.vrun(command: <string>, ...)
+```
+:::
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| command | 命令字符串 |
+| ... | 命令的可变参数 |
+
+#### 用法说明
+
+与 [os.run](#os-run) 类似，但当通过 `xmake -v` 或 `xmake --verbose` 启用 verbose 模式时，会先回显格式化后的命令，再执行该命令。未启用 verbose 时，命令静默执行。
+
+```lua
+os.vrun("echo hello %s!", "xmake")
+```
+
+适用于希望常规构建保持安静、调试时才显示命令的自定义脚本。
+
+## os.vrunv
+
+- 仅在 verbose 模式回显并运行原生 shell 命令，带参数列表
+
+#### 函数原型
+
+::: tip API
+```lua
+os.vrunv(program: <string>, args: <table>, options: <table>)
+```
+:::
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| program | 程序名 |
+| args | 参数表 |
+| options | 选项表（可选），支持 `os.runv` 和 `os.execv` 的选项；设置 `{dryrun = true}` 时不执行命令 |
+
+#### 用法说明
+
+与 [os.runv](#os-runv) 类似，但当通过 `xmake -v` 或 `xmake --verbose` 启用 verbose 模式时，会先回显完整命令，并以 `os.execv` 的方式执行；未启用 verbose 时，以 `os.runv` 的方式静默执行。
+
+```lua
+os.vrunv("echo", {"hello", "xmake!"})
+```
+
+在 verbose 模式下仅查看将要执行的命令而不实际运行：
+
+```lua
+os.vrunv("echo", {"hello", "xmake!"}, {dryrun = true})
 ```
 
 ## os.exec
@@ -2161,5 +2263,242 @@ end
 
 benchmark(function()
     os.sleep(100)
+end)
+```
+
+## os.getpid
+
+- 获取当前进程 ID
+
+#### 函数原型
+
+::: tip API
+```lua
+os.getpid()
+```
+:::
+
+
+#### 参数说明
+
+此函数不需要参数。
+
+#### 用法说明
+
+```lua
+print(os.getpid())
+```
+
+## os.uid
+
+- 获取用户 ID 信息
+
+#### 函数原型
+
+::: tip API
+```lua
+os.uid(name?: <string>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| name | 可选。用户名 |
+
+#### 用法说明
+
+返回包含用户 ID 信息的 table，包括 `uid` 和 `euid` 等字段：
+
+```lua
+local id = os.uid()
+print(id.euid)
+```
+
+::: tip 注意
+此接口仅在 Linux/macOS 上可用。
+:::
+
+[os.isroot](#os-isroot) 内部使用此接口判断当前用户是否为 root。另请参阅 [os.gid](#os-gid) 获取用户组信息。
+
+## os.gid
+
+- 获取用户组 ID 信息
+
+#### 函数原型
+
+::: tip API
+```lua
+os.gid(name?: <string>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| name | 可选。组名 |
+
+#### 用法说明
+
+返回包含组 ID 信息的 table，包括 `gid` 和 `egid` 等字段：
+
+```lua
+local id = os.gid()
+print(id.egid)
+```
+
+::: tip 注意
+此接口仅在 Linux/macOS 上可用。
+:::
+
+另请参阅 [os.uid](#os-uid) 获取用户 ID 信息。
+
+## os.nuldev
+
+- 获取空设备路径
+
+#### 函数原型
+
+::: tip API
+```lua
+os.nuldev(input?: <boolean>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| input | 可选。是否获取输入空设备路径 |
+
+#### 用法说明
+
+获取当前平台的空设备路径，在 Unix 上为 `/dev/null`，在 Windows 上为 `nul`：
+
+```lua
+print(os.nuldev())
+```
+
+## os.pbpaste
+
+- 从系统剪贴板获取内容
+
+#### 函数原型
+
+::: tip API
+```lua
+os.pbpaste()
+```
+:::
+
+
+#### 参数说明
+
+此函数不需要参数。
+
+#### 用法说明
+
+```lua
+local content = os.pbpaste()
+if content then
+    print(content)
+end
+```
+
+::: tip 注意
+此接口仅在 macOS 和 Linux（需要 xsel）上可用。
+:::
+
+与之相反的操作是 [os.pbcopy](#os-pbcopy)，用于复制内容到剪贴板。
+
+## os.pbcopy
+
+- 复制内容到系统剪贴板
+
+#### 函数原型
+
+::: tip API
+```lua
+os.pbcopy(data: <string>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| data | 要复制到剪贴板的字符串 |
+
+#### 用法说明
+
+```lua
+os.pbcopy("hello xmake")
+```
+
+::: tip 注意
+此接口仅在 macOS 和 Linux（需要 xsel）上可用。
+:::
+
+与之相反的操作是 [os.pbpaste](#os-pbpaste)，用于从剪贴板获取内容。
+
+## os.projectfile
+
+- 获取工程文件路径
+
+#### 函数原型
+
+::: tip API
+```lua
+os.projectfile()
+```
+:::
+
+
+#### 参数说明
+
+此函数不需要参数。
+
+#### 用法说明
+
+获取当前项目的 xmake.lua 文件路径：
+
+```lua
+print(os.projectfile())
+```
+
+如需获取项目目录路径，请使用 [os.projectdir](#os-projectdir)。
+
+## os.atexit
+
+- 注册退出回调函数
+
+#### 函数原型
+
+::: tip API
+```lua
+os.atexit(on_exit: <function>)
+```
+:::
+
+
+#### 参数说明
+
+| 参数 | 描述 |
+|------|------|
+| on_exit | 退出时要执行的回调函数 |
+
+#### 用法说明
+
+注册在 xmake 退出时执行的回调函数：
+
+```lua
+os.atexit(function ()
+    print("xmake exited")
 end)
 ```

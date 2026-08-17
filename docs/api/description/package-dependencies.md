@@ -1,5 +1,7 @@
 # Package Dependencies
 
+For package management tutorials, see [Adding Packages](/guide/project-configuration/add-packages) and the [Package Management Guide](/guide/package-management/using-official-packages). To access package instances in the script domain, see [Package Instance API](/api/scripts/package-instance).
+
 ## package
 
 - Define package configuration
@@ -358,6 +360,46 @@ package("libcurl")
 ...
 ```
 
+## set_sourcedir
+
+- Set the source directory of the package
+
+#### Function Prototype
+
+::: tip API
+```lua
+set_sourcedir(sourcedir: <string>)
+```
+:::
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| sourcedir | Package source directory path |
+
+#### Usage
+
+Set the source directory path of the package, usually used for local source code package integration. When you need to integrate local source code libraries in your project instead of remote downloading and installation, you can specify the source directory through this interface.
+
+For example:
+
+```lua
+package("foo")
+    set_sourcedir(path.join(os.scriptdir(), "foo"))
+    on_install(function (package)
+        local configs = {}
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        import("package.tools.cmake").install(package, configs)
+    end)
+end
+```
+
+::: tip Note
+If it's only for local source code integration, we don't need to additionally set `add_urls` and `add_versions`.
+:::
+
 ## add_patches
 
 - Add package patches
@@ -648,7 +690,39 @@ add_defines(defines: <string|array>, ...)
 
 Some specific definition options can be exported to the integrated package.
 
+
+## add_schemes
+
+- Add package schemes
+
+#### Function Prototype
+
+::: tip API
+```lua
+add_schemes(schemes: <string|array>, ...)
+```
+:::
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| schemes | Scheme name string or array |
+| ... | Variable parameters, can pass multiple scheme names |
+
+#### Usage
+
+Defines the list of available schemes for the package. The order matters: the first scheme is the default if none is explicitly selected.
+
+For configuration of schemes, please refer to [package:scheme](/api/scripts/package-instance.html#package-scheme).
+
+```lua
+package("mypkg")
+    add_schemes("binary", "source")
+```
+
 ## add_configs
+
 
 - Add package configs
 
@@ -660,7 +734,8 @@ add_configs(name: <string>, {
     description = <string>,
     default = <string|boolean|number>,
     values = <array>,
-    type = <string>
+    type = <string>,
+    readonly = <boolean>
 })
 ```
 :::
@@ -675,6 +750,7 @@ add_configs(name: <string>, {
 | default | Default value for the configuration |
 | values | Allowed values array |
 | type | Configuration type: "string", "boolean", "number" |
+| readonly | Prevent the modification of the configuration value |
 
 #### Usage
 
@@ -715,6 +791,19 @@ Then in the project, enable these configurations and compile the package with th
 
 ```lua
 add_requires("pcre2", {configs = {bitwidth = 16}})
+```
+
+It is possible to overwrite a standard configuration, to force a value for instance:
+
+```lua
+package("my-package")
+    add_configs("shared", {description = "Build shared library.", default = false, type = "boolean", readonly = true})
+```
+
+`my-package` can only be built as `shared` and a warning will be issued if the value of `shared` is set to `false`.
+
+```
+warning: configs.shared is readonly in package(my-package), it's always true
 ```
 
 ## add_extsources

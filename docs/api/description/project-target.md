@@ -2,6 +2,8 @@
 
 We can use `target("test")` to define a project target named "test", each target generates an executable program, a static library, or a dynamic library.
 
+For a quick start guide on target configuration, see [Configure Targets Guide](/guide/project-configuration/configure-targets). To access target instances in the script domain (e.g. `on_load`, `on_build` callbacks), see [Target Instance API](/api/scripts/target-instance).
+
 :::tip NOTE
 All interfaces of target can be set in the global scope, which affects all sub-targets.
 :::
@@ -3156,7 +3158,7 @@ We can specify it through additional parameters, `add_rpathdirs("xxx", {runpath 
 
 For relevant background details, see: [#5109](https://github.com/xmake-io/xmake/issues/5109)
 
-After 2.9.4, we added `add_rpathdirs("xxx", {install_only = true})`, which can configure the installed rpath path separately.
+After 2.9.4, we added `add_rpathdirs("xxx", {installonly = true})`, which can configure the installed rpath path separately.
 
 ## add_includedirs
 
@@ -3949,6 +3951,46 @@ Equivalent to:
 
 ```lua
 add_cugencodes("sm_60")
+```
+
+## add_ascnpuarchs <Badge type="tip" text="v3.0.9" />
+
+### Add NPU architectures for Huawei Ascend C
+
+#### Function Prototype
+
+::: tip API
+```lua
+add_ascnpuarchs(archs: <string|array>, ...)
+```
+:::
+
+
+#### Parameter Description
+
+| Parameter | Description |
+|-----------|-------------|
+| archs | Ascend NPU architecture string or array, such as "dav-2201" |
+| ... | Variable parameters, can pass multiple NPU architecture strings |
+
+#### Usage
+
+Used with the [Ascend C toolchain](custom-toolchain.md) to specify the target NPU architecture for `.asc` (Ascend C kernel) and `.aicpu` (AI-CPU) source files. The values are mapped to the `--npu-arch=...` flag of the Bisheng compiler.
+
+```lua
+target("ascendc_mixed")
+    set_kind("binary")
+    add_files("src/main.asc", "src/helper.aicpu")
+    add_ascnpuarchs("dav-2201")
+```
+
+Multiple architectures can also be specified:
+
+```lua
+target("ascendc_mixed")
+    set_kind("binary")
+    add_files("src/main.asc")
+    add_ascnpuarchs("dav-2201", "dav-2202")
 ```
 
 ## add_ldflags
@@ -6171,7 +6213,7 @@ target("test")
 We can also set the current working directory of the test run through rundir, for example:
 
 ```lua
-targett("test")
+target("test")
      add_tests("testname", {rundir = os.projectdir()})
 ```
 
@@ -6266,6 +6308,20 @@ We can also configure `{plain = true}` to disable lua pattern matching and only 
 ```lua
 target("test")
      add_tests("testname", {plain = true, pass_outputs = "foo", fail_outputs = "hello"})
+```
+
+We can also match the file content through `pass_output_files` and `fail_output_files`. The path inside is relative to the current `xmake.lua` script directory.
+
+The content of the file specified by `pass_output_files` will serve as the expected standard output. If the actual output matches the file content, the test passes.
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.cpp")
+    add_tests("test1", {
+        runargs = {"arg1"},
+        pass_output_files = "test1.out"
+    })
 ```
 
 #### Configure test group

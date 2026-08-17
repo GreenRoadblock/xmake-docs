@@ -2,6 +2,8 @@
 
 Xmake 主要提供下面三种打包方式，用于将目标程序进行对外分发。
 
+关于安装构建产物，请参阅[安装卸载](/zh/guide/basic-commands/install-and-uninstall)。XPack 打包的完整接口请参阅 [XPack 接口文档](/zh/api/description/xpack-interfaces)。
+
 ## 生成本地包 {#local-package}
 
 通过 `xmake package` 命令，我们可以生成一个带有 xmake.lua 配置文件的本地包，它里面包含了所有的目标程序二进制文件，并且可以通过 `add_requires` 包管理接口引入和使用。
@@ -64,8 +66,8 @@ $ tree ./build/foo.pkg/
 - Windows NSIS 二进制安装包
 - Windows WIX 二进制安装包
 - runself (shell) 自编译安装包
-- zip/tar.gz 二进制包
-- zip/tar.gz 源码包
+- zip/tar.gz/tar.xz 二进制包
+- zip/tar.gz/tar.xz 源码包
 - RPM 二进制安装包
 - SRPM 源码安装包
 - DEB 二进制安装包

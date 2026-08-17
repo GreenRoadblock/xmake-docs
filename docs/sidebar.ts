@@ -13,13 +13,14 @@ export function builtinModulesApiSidebarItems(): DefaultTheme.SidebarItem[] {
     { text: 'cprintf', link: 'builtin-modules/cprintf' },
     { text: 'format', link: 'builtin-modules/format' },
     { text: 'vformat', link: 'builtin-modules/vformat' },
-    { text: 'raise', link: 'builtin-pmodules/raise' },
+    { text: 'raise', link: 'builtin-modules/raise' },
     { text: 'os', link: 'builtin-modules/os' },
     { text: 'io', link: 'builtin-modules/io' },
     { text: 'path', link: 'builtin-modules/path' },
     { text: 'hash', link: 'builtin-modules/hash' },
     { text: 'table', link: 'builtin-modules/table' },
     { text: 'string', link: 'builtin-modules/string' },
+    { text: 'utf8', link: 'builtin-modules/utf8' },
     { text: 'coroutine', link: 'builtin-modules/coroutine' },
     { text: 'winos', link: 'builtin-modules/winos' },
     { text: 'macos', link: 'builtin-modules/macos' },
@@ -169,6 +170,7 @@ function cliModulesApiSidebar(): DefaultTheme.SidebarItem {
     collapsed: true,
     items: [
       { text: 'amalgamate', link: 'extension-modules/cli/amalgamate' },
+      { text: 'iconv', link: 'extension-modules/cli/iconv' },
     ]
   }
 }
@@ -268,4 +270,3 @@ function packageModulesApiSidebar(): DefaultTheme.SidebarItem {
     ]
   }
 }
-

@@ -12,6 +12,8 @@ xmake [action] [arguments] ...
 
 其中，action 就是 xmake cli 提供的子命令，而对于创建工程，它就是 `xmake create`。
 
+创建工程后，关于 xmake.lua 的配置说明请参阅[项目配置语法说明](/zh/guide/project-configuration/syntax-description)。关于目标配置的详细接口，请参阅[项目目标 API](/zh/api/description/project-target)。
+
 ## 创建一个 C++ 空工程
 
 首先，我们可以尝试创建一个名叫 `hello` 的 `c++` 控制台空工程。
@@ -163,4 +165,33 @@ $ xmake
 ```
 
 其中，最常用的就是创建控制台（console）、静态库（static）和动态库（shared）等程序。
+
+## 自定义模板 {#custom-templates}
+
+除了内置模板，xmake 还支持自定义工程模板。模板按优先级从以下位置搜索：
+
+1. **仓库模板** - 通过 `xmake repo` 添加的仓库中的 `templates` 目录
+2. **全局模板** - `~/.xmake/templates` 目录
+
+### 列出可用模板
+
+```bash
+# 列出所有可用模板
+$ xmake create --list
+
+# 按语言过滤
+$ xmake create --list -l c++
+```
+
+### 使用自定义模板
+
+```bash
+$ xmake create -t mytemplate hello
+```
+
+### 远程模板分发
+
+模板支持通过远程仓库分发，用户可以将自定义模板上传到仓库，其他人通过添加仓库即可使用。
+
+模板目录结构为：`<rootdir>/<language>/<template_id>/xmake.lua`，模板文件中可使用 `${TARGET_NAME}` 等变量，在创建工程时自动替换。
 

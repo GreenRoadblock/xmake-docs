@@ -2,6 +2,8 @@
 
 2.2.1发布后，Xmake 不仅原生支持多语言文件的构建，还允许用户通过自定义构建规则实现复杂的未知文件构建。
 
+自定义规则的入门教程请参阅[自定义规则指南](/zh/guide/project-configuration/custom-rule)。xmake 内置的规则列表请参阅[内置规则参考](/zh/api/description/builtin-rules)。
+
 自定义构建规则可以使用 `set_extensions` 将一组文件扩展名关联到它们。
 
 一旦这些扩展与规则相关联，稍后对 `add_files` 的调用将自动使用此自定义规则。
@@ -596,6 +598,29 @@ batchcmds:mkdir("/xxx") -- and cp, mv, rm, ln ..
 batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir, languages = (sourcekind == "cxx" and "c++11")}})
 batchcmds:link(objectfiles, targetfile, {configs = {linkdirs = ""}})
 ```
+
+### batchcmds:call <Badge type="tip" text="v3.1.0" />
+
+在 v3.1.0 之后，我们还可以通过 `batchcmds:call` 直接注册一个 lua 函数作为构建命令，而不必再走 `batchcmds:vrunv` 拉起子进程。
+
+```lua
+rule("myrule")
+    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        batchcmds:call(function (inputfile, outputfile, opt)
+            io.writefile(outputfile, io.readfile(inputfile))
+        end, {sourcefile, target:autogenfile(sourcefile)}, {name = "myrule/copy", target = target})
+    end)
+```
+
+传入的函数会被自动 fork 到当前沙盒环境中执行，所以在函数体内可以照常使用 `import()`、`os.*`、`io.*` 等接口。第二个参数是传递给该函数的参数列表，第三个参数是附加的配置表，它会作为函数的最后一个参数传入。
+
+第一个参数也支持传入 lua 脚本文件的路径，此时它的行为和 `batchcmds:lua(...)` 完全一致。
+
+[utils.bin2c](builtin-rules.md#utils-bin2c) 和 [utils.bin2obj](builtin-rules.md#utils-bin2obj) 的 `transform` 配置就是基于它实现的。
+
+::: tip 注意
+直接传入 lua 函数的方式无法被 vs/cmake 等工程生成器导出，生成器会跳过它并给出警告。如果规则需要支持工程导出，建议使用脚本文件的形式。
+:::
 
 同时，我们在里面也简化对依赖执行的配置，下面是一个完整例子：
 

@@ -22,6 +22,11 @@
   }
 }
 
+.VPHomeHero .xmake-release-badge:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 3px;
+}
+
 /* button */
 :root {
   --vp-button-brand-border: transparent;
@@ -46,6 +51,7 @@
 
 /* colors */
 :root {
+  --vp-c-sponsor: #db2777;
   --vp-c-default-1: var(--vp-c-gray-1);
   --vp-c-default-2: var(--vp-c-gray-2);
   --vp-c-default-3: var(--vp-c-gray-3);
@@ -103,3 +109,222 @@ body.is-post .VPDocAside .VPDocAsideCarbonAds,
 body.is-post .VPDocAside .VPCarbonAds {
   display: none !important;
 }
+
+/* Team Page Layout */
+.xmake-team-page {
+  margin-top: 64px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1152px;
+  padding: 0 24px;
+}
+
+.xmake-team-header {
+  margin-bottom: 64px;
+}
+
+.xmake-team-header h1 {
+  margin-bottom: 24px;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 40px;
+}
+
+.xmake-team-header p {
+  margin: 0;
+  max-width: 512px;
+  color: var(--vp-c-text-2);
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.xmake-team-divider {
+  margin: 64px 0;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.xmake-team-section {
+  margin-bottom: 64px;
+}
+
+.xmake-team-info h2 {
+  margin-top: 0 !important;
+  border-top: none !important;
+  padding-top: 0 !important;
+  margin-bottom: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 32px;
+}
+
+.xmake-team-info p {
+  margin: 0;
+  color: var(--vp-c-text-2);
+  line-height: 24px;
+}
+
+.xmake-team-info {
+  margin-bottom: 24px;
+}
+
+@media (min-width: 960px) {
+  .xmake-team-page {
+    padding: 0 48px;
+  }
+
+  .xmake-team-header {
+    margin-left: 24px;
+  }
+
+  .xmake-team-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 64px;
+  }
+  
+  .xmake-team-info {
+    flex: 0 0 260px;
+    position: sticky;
+    top: 100px;
+    margin-bottom: 0;
+    margin-left: 24px;
+  }
+  
+  .xmake-team-members {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Customize Team Member Card */
+.xmake-team-members .VPTeamMembersItem {
+  position: relative !important;
+  text-align: left !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .profile {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  padding: 24px !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .avatar {
+  flex: 0 0 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  margin: 0 24px 0 0 !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .data {
+  flex: 1 !important;
+  padding-top: 0 !important;
+  text-align: left !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .name {
+  margin: 0 !important;
+  font-weight: 600 !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .affiliation {
+  margin: 4px 0 0 !important;
+  padding-top: 0 !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .desc {
+  margin: 12px 0 !important;
+  padding-top: 0 !important;
+  text-align: left !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .links {
+  margin: 12px 0 0 !important;
+  padding: 0 !important;
+  justify-content: flex-start !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .sp {
+  position: absolute !important;
+  top: 24px !important;
+  right: 24px !important;
+  margin: 0 !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .sp-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  height: 32px !important;
+  padding: 0 16px !important;
+  border: 1px solid var(--vp-c-sponsor) !important;
+  border-radius: 6px !important;
+  background-color: var(--vp-c-bg-soft) !important;
+  color: var(--vp-c-sponsor) !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  transition: color 0.25s, border-color 0.25s, background-color 0.25s !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .sp-link:hover {
+  border-color: var(--vp-c-sponsor) !important;
+  color: var(--vp-c-white) !important;
+  background-color: var(--vp-c-sponsor) !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .sp-link:hover .sp-icon {
+  color: var(--vp-c-white) !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .sp-icon {
+  margin-right: 8px !important;
+  width: 14px !important;
+  height: 14px !important;
+  fill: currentColor !important;
+}
+
+.xmake-team-members .VPTeamMembersItem .VPSocialLinks {
+  justify-content: flex-start !important;
+}
+
+/* Blog list title styling - force dark gray color and no underline */
+.VPDoc .content h1 a,
+.VPDoc .content h2 a,
+.blog-list h2 a,
+h2 a[href*="/posts/"] {
+  color: #1f2937 !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+}
+
+.blog-list h2 a:hover,
+h2 a[href*="/posts/"]:hover {
+  color: #1f2937 !important;
+  text-decoration: none !important;
+}
+
+/* Dark mode */
+.dark .VPDoc .content h1 a,
+.dark .VPDoc .content h2 a,
+.dark .blog-list h2 a,
+.dark h2 a[href*="/posts/"] {
+  color: #f3f4f6 !important;
+}
+
+.dark .blog-list h2 a:hover,
+.dark h2 a[href*="/posts/"]:hover {
+  color: #f3f4f6 !important;
+}
+
+/* Remove list markers from blog list */
+.blog-list ul,
+.blog-list li {
+  list-style: none !important;
+  list-style-type: none !important;
+}
+
+.blog-list li::before {
+  content: none !important;
+}
+
+

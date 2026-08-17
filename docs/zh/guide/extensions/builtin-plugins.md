@@ -164,6 +164,21 @@ $ xmake lua /tmp/test.lua
 当然，你也可以像宏脚本那样，使用`import`接口导入扩展模块，实现复杂的功能。
 :::
 
+### 从标准输入运行脚本
+
+`xmake lua` 命令现在支持从标准输入 (stdin) 读取并运行脚本，允许你通过管道将脚本内容传递给 xmake。
+
+```bash
+$ echo 'print("hello xmake")' | xmake lua --stdin
+hello xmake
+```
+
+或者：
+
+```bash
+$ cat script.lua | xmake lua --stdin
+```
+
 ### 运行内置的脚本命令
 
 你可以运行 `xmake lua -l` 来列举所有内置的脚本名，例如：
@@ -435,6 +450,68 @@ TARGET_NAME=$(echo $TARGET_INFO | jq -r '.targets[0].name')
 - 自动化构建系统和 CI/CD 流水线
 - 自定义项目分析工具
 - 文档生成
+
+### 显示目标依赖图 <Badge type="tip" text="v3.0.9" />
+
+通过 `xmake show --info=depgraph` 可以打印项目中各 target 之间的依赖图。`--format` 参数支持三种输出格式：
+
+```sh
+# ASCII 树形（默认）
+$ xmake show --info=depgraph
+
+# 限定为单个目标
+$ xmake show --info=depgraph --target=app
+
+# JSON 输出，便于工具集成
+$ xmake show --info=depgraph --format=json
+
+# Graphviz DOT 输出
+$ xmake show --info=depgraph --format=dot
+```
+
+JSON 输出结构如下：
+
+```json
+{
+  "root_targets": ["app"],
+  "targets": [
+    {"name": "core", "deps": []},
+    {"name": "ui",   "deps": ["core"]},
+    {"name": "app",  "deps": ["core", "ui"]}
+  ]
+}
+```
+
+DOT 输出：
+
+```
+digraph {
+    "core"
+    "ui" -> "core"
+    "app" -> "core"
+    "app" -> "ui"
+}
+```
+
+### 以 JSON 格式显示列表信息 <Badge type="tip" text="v3.1.0" />
+
+在 v3.1.0 之后，`xmake show` 的输出格式统一到了 `--format` 参数上，`-l/--list` 列表信息也支持 JSON 输出了。
+
+```sh
+# 纯文本输出（默认）
+$ xmake show -l targets
+$ xmake show -l targets --format=plain
+
+# JSON 输出
+$ xmake show -l targets --format=json
+["app","core","ui"]
+```
+
+`--format` 支持 `plain`、`json` 和 `dot`，其中 `dot` 只对 `--info=depgraph` 有效。如果给列表信息传入了不支持的格式，xmake 会直接报错，而不是静默地回退到纯文本。
+
+::: tip 注意
+原有的 `--json` 参数依然可用，但已经标记为废弃，建议统一改用 `--format=json`。
+:::
 
 ### 显示内置编译模式列表
 

@@ -2,6 +2,8 @@
 
 此页面描述了 [工程目标](/zh/api/description/project-target) 的 `on_load()`、`before_build()` 或 `after_install()` 等函数的 `target` 接口。
 
+关于在描述域中配置目标的接口，请参阅[项目目标描述域 API](/zh/api/description/project-target)。脚本域中可使用的内置模块（如 [os](/zh/api/scripts/builtin-modules/os)、[io](/zh/api/scripts/builtin-modules/io)、[path](/zh/api/scripts/builtin-modules/path) 等），请参阅[内置模块文档](/zh/api/scripts/builtin-modules/import)。
+
 ## target:name
 
 - 获取目标的名字
@@ -352,6 +354,41 @@ target:filename()
 
 
 目标文件的完整文件名，等价于 `path.filename(target:targetfile())`。
+
+## target:symbolfile
+
+- 获取目标的符号文件路径
+
+#### 函数原型
+
+::: tip API
+```lua
+target:symbolfile()
+```
+:::
+
+#### 参数说明
+
+此函数不需要参数。
+
+#### 用法说明
+
+
+此接口用于获取目标在 releasedbg 模式下生成的符号文件路径。符号文件格式因平台而异：
+
+- **Windows**: .pdb 文件
+- **macOS**: .dSYM 目录
+- **Linux**: .sym 文件
+
+```lua
+-- 获取符号文件路径
+local symbolfile = target:symbolfile()
+if symbolfile and os.isfile(symbolfile) then
+    print("符号文件: %s", symbolfile)
+end
+```
+
+这对于自定义脚本中后处理符号文件或调试目的特别有用。
 
 ## target:installdir
 
